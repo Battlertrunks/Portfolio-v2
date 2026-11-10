@@ -1,8 +1,16 @@
 import { mount } from '@vue/test-utils'
+import { nextTick } from 'vue'
 import { describe, expect, it } from 'vitest'
 
 import ProjectsView from '@/features/projects/ProjectsView.vue'
 import { projects } from '@/features/projects/projects.data'
+
+async function nextFrame() {
+  await new Promise<void>((resolve) => {
+    window.requestAnimationFrame(() => resolve())
+  })
+  await nextTick()
+}
 
 describe('ProjectsView', () => {
   it('renders one anchored section per project', () => {
@@ -59,5 +67,35 @@ describe('ProjectsView', () => {
     expect(target?.attributes('aria-current')).toBe('location')
 
     wrapper.unmount()
+  })
+
+  it('keeps a clicked link current until the user scrolls again', async () => {
+    const container = document.createElement('div')
+    document.body.appendChild(container)
+
+    const wrapper = mount(ProjectsView, { attachTo: container })
+    const links = wrapper.findAll('nav[aria-label="Project sections"] a')
+    const secondProjectLink = links[1]
+    const thirdProjectLink = links[2]
+
+    expect(secondProjectLink).toBeDefined()
+    expect(thirdProjectLink).toBeDefined()
+
+    await secondProjectLink?.trigger('click')
+
+    window.dispatchEvent(new Event('scroll'))
+    await nextFrame()
+
+    expect(secondProjectLink?.attributes('aria-current')).toBe('location')
+    expect(thirdProjectLink?.attributes('aria-current')).toBeUndefined()
+
+    window.dispatchEvent(new WheelEvent('wheel'))
+    window.dispatchEvent(new Event('scroll'))
+    await nextFrame()
+
+    expect(thirdProjectLink?.attributes('aria-current')).toBe('location')
+
+    wrapper.unmount()
+    container.remove()
   })
 })
