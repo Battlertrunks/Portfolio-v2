@@ -9,13 +9,32 @@ import { projects } from '@/features/projects/projects.data'
 
 const activeProjectId = ref(projects[0]?.id ?? '')
 let scrollFrame: number | null = null
+let isProjectSelectionLocked = false
+
+const scrollKeys = new Set(['ArrowDown', 'ArrowUp', 'PageDown', 'PageUp', 'Home', 'End', ' '])
+
+function selectProject(projectId: string) {
+  // Keep the clicked project selected until the user scrolls again.
+  isProjectSelectionLocked = true
+  activeProjectId.value = projectId
+}
+
+function releaseProjectLock() {
+  isProjectSelectionLocked = false
+}
+
+function releaseProjectLockOnKeydown(event: KeyboardEvent) {
+  if (scrollKeys.has(event.key)) {
+    releaseProjectLock()
+  }
+}
 
 function updateActiveProject() {
-  if (projects.length === 0) {
+  if (projects.length === 0 || isProjectSelectionLocked) {
     return
   }
 
-  const activationOffset = 140
+  const activationOffset: number = 140
   let nextActiveId = projects[0]?.id ?? ''
 
   for (const project of projects) {
@@ -52,11 +71,19 @@ onMounted(() => {
   updateActiveProject()
   window.addEventListener('scroll', scheduleActiveProjectUpdate, { passive: true })
   window.addEventListener('resize', scheduleActiveProjectUpdate)
+  window.addEventListener('pointerdown', releaseProjectLock, { passive: true })
+  window.addEventListener('wheel', releaseProjectLock, { passive: true })
+  window.addEventListener('touchmove', releaseProjectLock, { passive: true })
+  window.addEventListener('keydown', releaseProjectLockOnKeydown)
 })
 
 onBeforeUnmount(() => {
   window.removeEventListener('scroll', scheduleActiveProjectUpdate)
   window.removeEventListener('resize', scheduleActiveProjectUpdate)
+  window.removeEventListener('pointerdown', releaseProjectLock)
+  window.removeEventListener('wheel', releaseProjectLock)
+  window.removeEventListener('touchmove', releaseProjectLock)
+  window.removeEventListener('keydown', releaseProjectLockOnKeydown)
 
   if (scrollFrame !== null) {
     window.cancelAnimationFrame(scrollFrame)
@@ -96,7 +123,7 @@ onBeforeUnmount(() => {
                     activeProjectId === project.id ? 'text-accent' : 'text-muted hover:text-ink'
                   "
                   :aria-current="activeProjectId === project.id ? 'location' : undefined"
-                  @click="activeProjectId = project.id"
+                  @click="selectProject(project.id)"
                 >
                   {{ project.title }}
                   <span
