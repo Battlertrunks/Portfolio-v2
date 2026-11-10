@@ -1,21 +1,40 @@
-# Portfolio Client
+# Portfolio V2
 
-The frontend for Portfolio V2: a small, accessible portfolio built with Vue 3, TypeScript,
-Tailwind CSS v4, and Vite.
+The personal portfolio of Gavin Szczesniak, a full-stack developer who builds dependable
+applications with a backend-first approach: clear data models, typed API contracts, and accessible
+interfaces.
 
-## Requirements
+This repository contains the Vue 3 client for the site. It brings together an overview of how I
+work, a growing set of project case studies, and media that shows each build in context. The API and
+persisted content layer are planned next; today the site runs from typed local data.
 
-- Node.js 20.19 or newer
-- pnpm 11 or newer
+## Highlights
 
-## Setup
+- Home, About, and Projects routes with a responsive dark theme.
+- Project sections with a title, skills, description, and an image/video collage of up to four
+  items.
+- A sticky project index with smooth scrolling, scroll-spy tracking, and an animated teal underline.
+- Keyboard-friendly navigation, visible focus states, semantic markup, and reduced-motion support.
+- Typed project content and reusable UI primitives that are ready for real case studies.
+
+## Tech stack
+
+- Vue 3 with TypeScript
+- Vue Router
+- Tailwind CSS v4
+- Vite
+- Vitest and Vue Test Utils
+
+## Getting started
+
+Requires Node.js 20.19 or newer and pnpm 11 or newer.
 
 ```sh
 pnpm install
 pnpm dev
 ```
 
-The dev server runs at the URL printed by Vite.
+The dev server prints the local URL when it starts.
 
 ## Commands
 
@@ -36,19 +55,27 @@ The dev server runs at the URL printed by Vite.
 
 ```text
 src/
-  components/   Reusable UI components (PascalCase)
-  features/     Feature-specific views and containers
-  routes/       Route definitions
-  services/     API clients and other side effects (added when needed)
-  types/        Shared TypeScript types and interfaces
+  components/   Reusable UI and project media components
+  features/     Route-level views and project content
+  routes/       Vue Router configuration
+  types/        Shared TypeScript types
+  style.css     Theme tokens and base styles
+public/
+  projects/     Project screenshots, mockups, and videos
+tests/          Vitest and Vue Test Utils specs
 ```
+
+## Project content and media
+
+Project content lives in `src/features/projects/projects.data.ts`. Each project defines an `id` used
+by the sidebar anchor, plus a title, status, description, skill tags, and optional media. Media can
+be an image with `src` and `alt` text, or a video with `src`, an optional `poster`, and an accessible
+label. The collage shows at most four items.
+
+Assets under `public/projects/` are referenced from the site root, for example
+`/projects/portfolio-home.svg`. The current SVGs are placeholders; replace them with real
+screenshots and recordings as each case study is completed.
 
 ## Git hooks
 
-The repository uses Husky. Commits run type-checking and lint-staged; pushes run the unit tests.
-
-## Environment variables
-
-API base URLs and secrets belong in environment variables, never in source. Create a local
-`.env` file when a service needs one and document the variable in `.env.example`.
-# Portfolio-v2
+Commits run type-checking and lint-staged. Pushes run the unit tests.
