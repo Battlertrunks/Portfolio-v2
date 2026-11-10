@@ -4,6 +4,7 @@ import SectionHeading from '@/components/SectionHeading.vue'
 
 const skills = [
   'TypeScript',
+  'JavaScript',
   'Bun',
   'REST APIs',
   'SQL',
@@ -11,6 +12,19 @@ const skills = [
   'Tailwind CSS',
   'Testing',
   'Accessibility',
+  'GraphQL',
+  'pnpm',
+  'Express.js',
+  'Node.js',
+  'Docker',
+  'Kubernetes',
+  'AWS',
+  'React',
+  'Rust',
+  'PostgreSQL',
+  'SQLite',
+  'HTML',
+  'CSS',
 ] as const
 
 const currentFocus = [
