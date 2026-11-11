@@ -1,30 +1,14 @@
 <script setup lang="ts">
+import BaseCard from '@/components/BaseCard.vue'
 import PageContainer from '@/components/PageContainer.vue'
 import SectionHeading from '@/components/SectionHeading.vue'
+import { skillGroups } from '@/features/about/about.data'
 
-const skills = [
-  'TypeScript',
-  'JavaScript',
-  'Bun',
-  'REST APIs',
-  'SQL',
-  'Vue 3',
-  'Tailwind CSS',
-  'Testing',
-  'Accessibility',
-  'GraphQL',
-  'pnpm',
-  'Express.js',
-  'Node.js',
-  'Docker',
-  'Kubernetes',
-  'AWS',
-  'React',
-  'Rust',
-  'PostgreSQL',
-  'SQLite',
-  'HTML',
-  'CSS',
+const branchPaths = [
+  'M12 14C16 14 16 7 20 7S24 21 28 21S34 14 40 14',
+  'M12 14C16 14 16 21 20 21S24 7 28 7S34 14 40 14',
+  'M12 14C15 14 15 9 18 9S21 19 24 19S31 9 34 9S37 14 40 14',
+  'M12 14C17 14 17 9 21 9S25 19 29 19S35 14 40 14',
 ] as const
 
 const currentFocus = [
@@ -33,6 +17,10 @@ const currentFocus = [
   'Keeping contracts type-safe from the database to the browser.',
   'Testing failure modes, not just the happy path.',
 ] as const
+
+function branchPath(seed: number) {
+  return branchPaths[seed % branchPaths.length] ?? branchPaths[0]
+}
 </script>
 
 <template>
@@ -46,39 +34,96 @@ const currentFocus = [
         description="I build systems end to end, spending most of my time on the APIs, data, and server-side logic that make the interface possible."
       />
 
-      <div class="mt-10 grid gap-10 lg:grid-cols-[2fr_1fr]">
-        <div class="space-y-5 text-base leading-7 text-muted">
-          <p>
-            I'm Gavin, a full-stack developer who leans toward the backend. I enjoy modeling data,
-            shaping API contracts, and making server-side behavior predictable before I touch the
-            UI.
-          </p>
-          <p>
-            My main tools are TypeScript and Bun on the server, with Vue 3 and Tailwind CSS on the
-            client. I care about clear boundaries, useful error messages, and tests that cover the
-            paths users actually take.
-          </p>
-          <p>
-            Outside of work, I'm usually experimenting with a side project, reading about system
-            design, or refining this portfolio.
-          </p>
-        </div>
-
-        <aside aria-labelledby="skills-title" class="rounded-xl border border-line bg-surface p-6">
-          <h2 id="skills-title" class="text-sm font-semibold tracking-widest text-accent uppercase">
-            Skills
-          </h2>
-          <ul class="mt-4 flex flex-wrap gap-2">
-            <li
-              v-for="skill in skills"
-              :key="skill"
-              class="rounded-full border border-line bg-canvas px-3 py-1 text-sm text-ink"
-            >
-              {{ skill }}
-            </li>
-          </ul>
-        </aside>
+      <div class="mt-10 max-w-2xl space-y-5 text-base leading-7 text-muted">
+        <p>
+          I'm Gavin, a full-stack developer who leans toward the backend. I enjoy modeling data,
+          shaping API contracts, and making server-side behavior predictable before I touch the UI.
+        </p>
+        <p>
+          My main tools are TypeScript and Bun on the server, with Vue 3 and Tailwind CSS on the
+          client. I care about clear boundaries, useful error messages, and tests that cover the
+          paths users actually take.
+        </p>
+        <p>
+          Outside of work, I'm usually experimenting with a side project, reading about system
+          design, or refining this portfolio.
+        </p>
       </div>
+    </section>
+
+    <section class="pb-16 sm:pb-24" aria-labelledby="skills-title">
+      <SectionHeading
+        heading-id="skills-title"
+        eyebrow="Skills"
+        title="The tools I reach for."
+        description="Grouped by layer, from the languages I work in to the infrastructure that runs the result."
+      />
+
+      <ul class="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <BaseCard
+          v-for="(group, groupIndex) in skillGroups"
+          :key="group.title"
+          as="li"
+          padding="none"
+          class="h-full p-5"
+        >
+          <div class="relative flex h-full flex-col">
+            <span
+              aria-hidden="true"
+              class="absolute top-3 bottom-0 left-3 w-px bg-gradient-to-b from-accent/40 via-control/30 to-transparent"
+            />
+
+            <div class="relative flex items-center gap-3">
+              <span
+                class="relative z-10 flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-accent/30 bg-surface"
+              >
+                <span
+                  class="h-1.5 w-1.5 rounded-full bg-accent shadow-[0_0_8px_var(--color-accent)]"
+                />
+              </span>
+              <h3 class="text-xs font-semibold tracking-[0.14em] text-ink uppercase">
+                {{ group.title }}
+              </h3>
+              <span aria-hidden="true" class="ml-auto text-xs tabular-nums text-muted/80">
+                {{ String(group.skills.length).padStart(2, '0') }}
+              </span>
+            </div>
+
+            <ul class="relative mt-3 space-y-1">
+              <li
+                v-for="(skill, skillIndex) in group.skills"
+                :key="skill"
+                class="group/skill relative flex items-center"
+              >
+                <span
+                  aria-hidden="true"
+                  class="absolute top-1/2 left-3 h-1 w-1 -translate-x-1/2 -translate-y-1/2 rounded-full bg-control/50 transition-colors group-hover/skill:bg-accent"
+                />
+                <svg
+                  aria-hidden="true"
+                  focusable="false"
+                  class="h-7 w-10 shrink-0 text-control/40 transition-colors group-hover/skill:text-accent"
+                  viewBox="0 0 40 28"
+                  fill="none"
+                >
+                  <path
+                    :d="branchPath(groupIndex + skillIndex)"
+                    stroke="currentColor"
+                    stroke-width="1.25"
+                    stroke-linecap="round"
+                    vector-effect="non-scaling-stroke"
+                  />
+                </svg>
+                <span
+                  class="ml-1 rounded-full border border-line bg-canvas px-3 py-1 text-sm text-ink transition-colors group-hover/skill:border-accent/40 group-hover/skill:bg-surface group-hover/skill:text-accent-strong"
+                >
+                  {{ skill }}
+                </span>
+              </li>
+            </ul>
+          </div>
+        </BaseCard>
+      </ul>
     </section>
 
     <section aria-labelledby="focus-title" class="pb-16 sm:pb-24">
