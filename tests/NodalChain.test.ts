@@ -63,8 +63,8 @@ describe('NodalChain', () => {
   it('marks the spine, markers, and branches as decorative', () => {
     const wrapper = mountChain()
 
-    // Two spine layers plus a marker and a branch connector per entry.
-    expect(wrapper.findAll('[aria-hidden="true"]')).toHaveLength(entries.length * 2 + 2)
+    // Spine grow layer plus two flow layers, and a marker and a branch connector per entry.
+    expect(wrapper.findAll('[aria-hidden="true"]')).toHaveLength(entries.length * 2 + 3)
 
     wrapper.unmount()
   })

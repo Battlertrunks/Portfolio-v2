@@ -5,10 +5,15 @@ import ExperienceView from '@/features/experience/ExperienceView.vue'
 import { educationNodes, experienceNodes } from '@/features/experience/experience.data'
 
 describe('ExperienceView', () => {
-  it('renders the page heading', () => {
+  it('leads with the professional experience section', () => {
     const wrapper = mount(ExperienceView)
+    const sections = wrapper.findAll('section[aria-labelledby]')
 
-    expect(wrapper.get('h1').text()).toContain('From coursework to production.')
+    expect(sections.map((section) => section.attributes('aria-labelledby'))).toEqual([
+      'employment-title',
+      'education-title',
+    ])
+    expect(wrapper.get('#employment-title').text()).toContain("Where I've put it to work.")
 
     wrapper.unmount()
   })
