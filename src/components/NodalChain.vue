@@ -27,7 +27,11 @@ defineProps<Props>()
     />
     <span
       aria-hidden="true"
-      class="pointer-events-none absolute inset-y-0 left-[11px] w-px animate-spine-flow bg-[linear-gradient(to_bottom,transparent,var(--color-accent-strong)_42%,var(--color-accent-strong)_58%,transparent)] [background-size:100%_26%]"
+      class="pointer-events-none absolute inset-y-0 left-[11px] w-px animate-spine-flow bg-[linear-gradient(to_bottom,transparent_12%,var(--color-accent-strong)_46%,var(--color-accent-strong)_54%,transparent_88%)] [background-size:100%_50%] [mask-image:linear-gradient(to_bottom,transparent,black_10%,black_65%,transparent)]"
+    />
+    <span
+      aria-hidden="true"
+      class="pointer-events-none absolute inset-y-0 left-[11px] w-px animate-spine-flow-drift bg-[linear-gradient(to_bottom,transparent_20%,rgb(45_212_191/0.55)_48%,rgb(45_212_191/0.55)_52%,transparent_80%)] [background-size:100%_33.333%] [mask-image:linear-gradient(to_bottom,transparent,black_10%,black_65%,transparent)]"
     />
 
     <li
