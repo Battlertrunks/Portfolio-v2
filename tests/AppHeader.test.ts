@@ -8,6 +8,7 @@ const routes = [
   { path: '/', component: { render: () => null } },
   { path: '/about', component: { render: () => null } },
   { path: '/projects', component: { render: () => null } },
+  { path: '/experience', component: { render: () => null } },
 ]
 
 async function mountHeader() {
@@ -29,7 +30,7 @@ describe('AppHeader', () => {
     const wrapper = await mountHeader()
 
     const links = wrapper.findAll('nav[aria-label="Primary"] a')
-    expect(links.map((link) => link.text())).toEqual(['Home', 'About', 'Projects'])
+    expect(links.map((link) => link.text())).toEqual(['Home', 'About', 'Projects', 'Experience'])
 
     wrapper.unmount()
   })
