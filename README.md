@@ -10,7 +10,8 @@ persisted content layer are planned next; today the site runs from typed local d
 
 ## Highlights
 
-- Home, About, and Projects routes with a responsive dark theme.
+- Home, About, Projects, and Experience routes with a responsive dark theme.
+- An Experience page with animated nodal chains for professional roles and schooling.
 - Project sections with a title, skills, description, and an image/video collage of up to four
   items.
 - A sticky project index with smooth scrolling, scroll-spy tracking, and an animated teal underline.
