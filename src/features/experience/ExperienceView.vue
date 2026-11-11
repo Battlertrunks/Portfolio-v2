@@ -7,12 +7,12 @@ import { educationNodes, experienceNodes } from '@/features/experience/experienc
 
 <template>
   <PageContainer>
-    <section class="pb-16 sm:pb-24" aria-labelledby="employment-title">
+    <section class="py-16 sm:pb-24" aria-labelledby="employment-title">
       <SectionHeading
         heading-id="employment-title"
         eyebrow="Professional experience"
         title="Where I've put it to work."
-        description="My roles at DocNetwork, growing from a junior developer into a mid-level full-stack developer."
+        description="My professional journey and experience as a Software Developer"
       />
 
       <NodalChain label="Roles held at DocNetwork" :entries="experienceNodes" class="mt-10" />
