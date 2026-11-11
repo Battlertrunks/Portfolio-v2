@@ -20,6 +20,12 @@ const routes: RouteRecordRaw[] = [
     meta: { title: 'Projects' },
   },
   {
+    path: '/experience',
+    name: 'experience',
+    component: () => import('@/features/experience/ExperienceView.vue'),
+    meta: { title: 'Experience' },
+  },
+  {
     path: '/:pathMatch(.*)*',
     redirect: { name: 'home' },
   },

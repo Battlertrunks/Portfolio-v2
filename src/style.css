@@ -12,6 +12,72 @@
   --color-accent-soft: #134e4a;
   --color-accent-soft-ink: #ccfbf1;
   --color-on-accent: #042f2e;
+
+  --animate-spine-grow: spine-grow 1.1s ease-out backwards;
+  --animate-spine-flow: spine-flow 5s linear infinite;
+  --animate-node-pop: node-pop 0.45s cubic-bezier(0.22, 1.2, 0.36, 1) backwards;
+  --animate-node-rise: node-rise 0.6s ease-out backwards;
+  --animate-node-glow: node-glow 3.2s ease-in-out infinite;
+  --animate-branch-draw: branch-draw 0.7s ease-out backwards;
+
+  @keyframes spine-grow {
+    from {
+      transform: scaleY(0);
+    }
+    to {
+      transform: scaleY(1);
+    }
+  }
+
+  @keyframes spine-flow {
+    from {
+      background-position: 50% -30%;
+    }
+    to {
+      background-position: 50% 130%;
+    }
+  }
+
+  @keyframes node-pop {
+    from {
+      opacity: 0;
+      transform: scale(0.4);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  @keyframes node-rise {
+    from {
+      opacity: 0;
+      transform: translateY(14px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes node-glow {
+    0%,
+    100% {
+      box-shadow: 0 0 6px color-mix(in oklab, var(--color-accent) 55%, transparent);
+    }
+    50% {
+      box-shadow: 0 0 14px color-mix(in oklab, var(--color-accent) 85%, transparent);
+    }
+  }
+
+  @keyframes branch-draw {
+    from {
+      stroke-dashoffset: 1;
+    }
+    to {
+      stroke-dashoffset: 0;
+    }
+  }
 }
 
 @layer base {

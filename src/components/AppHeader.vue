@@ -9,6 +9,7 @@ const navItems: readonly NavItem[] = [
   { label: 'Home', to: '/' },
   { label: 'About', to: '/about' },
   { label: 'Projects', to: '/projects' },
+  { label: 'Experience', to: '/experience' },
 ]
 
 const route = useRoute()
