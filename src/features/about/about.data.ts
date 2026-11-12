@@ -14,7 +14,7 @@ export const skillGroups: readonly SkillGroup[] = [
   },
   {
     title: 'Frontend',
-    skills: ['Vue 3', 'React', 'Tailwind CSS', 'HTML', 'CSS', 'Vuetify', 'Playwright'],
+    skills: ['Vue 3', 'React', 'Tailwind CSS', 'HTML5', 'CSS', 'Vuetify', 'Playwright'],
   },
   {
     title: 'Cloud & Infra',
@@ -22,10 +22,10 @@ export const skillGroups: readonly SkillGroup[] = [
   },
   {
     title: 'Test & Quality',
-    skills: ['Testing', 'Vitest', 'Accessibility', 'Chai', 'Mocha', 'Sinon', 'Trivy'],
+    skills: ['Testing', 'Vitest', 'Accessibility', 'Chai', 'Mocha', 'Sinon', 'Trivy', 'Test Kube'],
   },
   {
     title: 'Developer Tooling',
-    skills: ['pnpm', 'Vite', 'Git', 'GitHub', 'GitHub Copilot', 'OpenCode', 'Ollama', 'Postman'],
+    skills: ['pnpm', 'Vite', 'Git', 'GitHub', 'GitHub Copilot', 'OpenCode', 'Ollama', 'Postman / Bruno'],
   },
 ] as const

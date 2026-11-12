@@ -16,9 +16,9 @@ const principles = [
       'Strict TypeScript and shared contracts keep the client and server honest about request and response shapes.',
   },
   {
-    title: 'Accessible by default',
+    title: 'Agentic Engineering Focus',
     description:
-      'Semantic HTML, visible focus states, and keyboard-friendly flows are part of the baseline, not an afterthought.',
+      'I focus building applications agentically, ensuring that each component and feature serves a clear purpose and contributes to the overall system behavior.',
   },
 ] as const
 </script>
@@ -66,8 +66,7 @@ const principles = [
           Let's build something dependable.
         </h2>
         <p class="mt-3 max-w-xl leading-7 text-accent-soft-ink">
-          I'm open to full-stack work where API design, data modeling, and thoughtful interfaces all
-          matter.
+          I am committed to building dependable full-stack applications that prioritize clear data modeling, robust API design, and accessible user interfaces.
         </p>
         <div class="mt-6">
           <BaseButton to="/about">More about me</BaseButton>

@@ -4,18 +4,20 @@ import PageContainer from '@/components/PageContainer.vue'
 import SectionHeading from '@/components/SectionHeading.vue'
 import { skillGroups } from '@/features/about/about.data'
 
-const branchPaths = [
+const branchPaths: string[] = [
   'M12 14C16 14 16 7 20 7S24 21 28 21S34 14 40 14',
   'M12 14C16 14 16 21 20 21S24 7 28 7S34 14 40 14',
   'M12 14C15 14 15 9 18 9S21 19 24 19S31 9 34 9S37 14 40 14',
   'M12 14C17 14 17 9 21 9S25 19 29 19S35 14 40 14',
 ] as const
 
-const currentFocus = [
+const currentFocus: string[] = [
   'Designing APIs that are predictable, documented, and hard to misuse.',
+  'Finding more opportunities to feature captain my skills and knowledge in collaborative projects.',
+  'Exploring more approaches to building reliable and maintainable systems with agentic workflows and automation.',
+  'Building foundational knowledge in software architecture and system design.',
   'Modeling data and writing queries that stay fast as they grow.',
   'Keeping contracts type-safe from the database to the browser.',
-  'Testing failure modes, not just the happy path.',
 ] as const
 
 function branchPath(seed: number) {
@@ -36,17 +38,17 @@ function branchPath(seed: number) {
 
       <div class="mt-10 max-w-2xl space-y-5 text-base leading-7 text-muted">
         <p>
-          I'm Gavin, a full-stack developer who leans toward the backend. I enjoy modeling data,
-          shaping API contracts, and making server-side behavior predictable before I touch the UI.
+          I'm Gavin, a full-stack developer who leans toward the backend. I enjoy building and
+          learning how to make systems reliable and maintainable before they reach the user interface.
         </p>
         <p>
-          My main tools are TypeScript and Bun on the server, with Vue 3 and Tailwind CSS on the
+          My main tools are TypeScript and Node.js on the server, with Vue 3 and Vuetify on the
           client. I care about clear boundaries, useful error messages, and tests that cover the
-          paths users actually take.
+          paths users actually take. I prioritize building systems that are robust and maintainable from the start.
         </p>
         <p>
           Outside of work, I'm usually experimenting with a side project, reading about system
-          design, or refining this portfolio.
+          design, or refining this portfolio. I enjoy tinkering with different agentic workflows and approaches to problem-solving with my local AI server
         </p>
       </div>
     </section>
@@ -56,7 +58,7 @@ function branchPath(seed: number) {
         heading-id="skills-title"
         eyebrow="Skills"
         title="The tools I reach for."
-        description="Grouped by layer, from the languages I work in to the infrastructure that runs the result."
+        description="What I have experience with and reach for in my work and projects."
       />
 
       <ul class="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -81,12 +83,9 @@ function branchPath(seed: number) {
                   class="h-1.5 w-1.5 rounded-full bg-accent shadow-[0_0_8px_var(--color-accent)]"
                 />
               </span>
-              <h3 class="text-xs font-semibold tracking-[0.14em] text-ink uppercase">
+              <h3 class="text-s font-semibold tracking-[0.14em] text-ink uppercase">
                 {{ group.title }}
               </h3>
-              <span aria-hidden="true" class="ml-auto text-xs tabular-nums text-muted/80">
-                {{ String(group.skills.length).padStart(2, '0') }}
-              </span>
             </div>
 
             <ul class="relative mt-3 space-y-1">
@@ -115,7 +114,7 @@ function branchPath(seed: number) {
                   />
                 </svg>
                 <span
-                  class="ml-1 rounded-full border border-line bg-canvas px-3 py-1 text-sm text-ink transition-colors group-hover/skill:border-accent/40 group-hover/skill:bg-surface group-hover/skill:text-accent-strong"
+                  class="ml-1 rounded-full border border-line bg-canvas px-3 py-1 text-s text-ink transition-colors group-hover/skill:border-accent/40 group-hover/skill:bg-surface group-hover/skill:text-accent-strong"
                 >
                   {{ skill }}
                 </span>

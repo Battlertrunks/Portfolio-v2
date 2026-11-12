@@ -92,7 +92,7 @@ defineProps<Props>()
           </span>
         </div>
 
-        <p class="mt-4 text-sm leading-6 text-muted">{{ entry.body }}</p>
+        <p class="mt-4 whitespace-pre-line text-sm leading-6 text-muted">{{ entry.body }}</p>
 
         <ul v-if="entry.tags?.length" class="mt-4 flex flex-wrap gap-2">
           <li

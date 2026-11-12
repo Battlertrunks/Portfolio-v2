@@ -102,7 +102,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', closeMenuOnEscape))
             <li v-for="item in navItems" :key="item.to">
               <RouterLink
                 :to="item.to"
-                class="block rounded-md px-1 py-3 text-sm font-medium text-muted transition-colors hover:text-accent hover:underline md:py-2"
+                class="block rounded-md px-1 py-3 text-sm font-medium text-muted transition-colors hover:text-accent hover:underline underline-offset-4 md:py-2"
                 exact-active-class="text-accent underline decoration-2 underline-offset-4"
                 @click="isMenuOpen = false"
               >
