@@ -70,7 +70,7 @@ defineProps<Props>()
       <BaseCard
         as="article"
         padding="lg"
-        class="animate-node-rise transition-[border-color,box-shadow,transform] duration-300 hover:-translate-y-0.5 hover:border-accent/40 hover:shadow-[0_10px_30px_-14px_var(--color-accent)]"
+        class="animate-node-rise transition-[border-color,box-shadow,translate] duration-300 ease-out hover:-translate-y-0.5 hover:border-accent/40 hover:shadow-[0_10px_30px_-14px_var(--color-accent)]"
         :style="{ animationDelay: `${entryIndex * 160 + 80}ms` }"
       >
         <div class="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
