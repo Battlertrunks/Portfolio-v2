@@ -1,39 +1,56 @@
 <script setup lang="ts">
-const layout = {
-  left: [
-    { kind: 'terminal', x: 43, y: 15, tilt: -13 },
-    { kind: 'keyboard', x: 56, y: 45, tilt: 11 },
-    { kind: 'floppy', x: 44, y: 76, tilt: -16 },
-  ],
-  right: [
-    { kind: 'javascript', x: 54, y: 23, tilt: 13 },
-    { kind: 'mouse', x: 47, y: 52, tilt: -12 },
-    { kind: 'cursor', x: 56, y: 84, tilt: 10 },
-  ],
-} as const
+const kinds = [
+  'terminal',
+  'keyboard',
+  'floppy',
+  'javascript',
+  'mouse',
+  'cursor',
+  'monitor',
+  'cassette',
+  'chip',
+  'code',
+] as const
 
-function jitter(value: number, range: number) {
-  return value + (Math.random() * 2 - 1) * range
+const stickersPerGutter = kinds.length / 2
+
+const shuffledKinds = kinds
+  .map((kind) => ({ kind, order: Math.random() }))
+  .sort((a, b) => a.order - b.order)
+  .map(({ kind }) => kind)
+
+function scatter(stickers: (typeof kinds)[number][]) {
+  // Spread the stickers across the width of each gutter in a random vertical order.
+  return stickers
+    .map((kind, index) => ({
+      kind,
+      x: (index + 0.15 + Math.random() * 0.7) / stickers.length,
+      order: Math.random(),
+    }))
+    .sort((a, b) => a.order - b.order)
+    .map(({ kind, x }, index) => ({
+      kind,
+      style: {
+        '--x': x,
+        '--y': (index + Math.random()) / stickers.length,
+        '--row': index,
+        '--tilt': `${Math.random() * 52 - 26}deg`,
+        '--scale': 0.65 + Math.random() * 0.23,
+      },
+    }))
 }
 
-const rails = Object.entries(layout).map(([side, stickers]) => ({
-  side,
-  stickers: stickers.map(({ kind, x, y, tilt }) => ({
-    kind,
-    style: {
-      '--x': `${jitter(x, 5)}%`,
-      '--y': `${jitter(y, 4)}%`,
-      '--tilt': `${jitter(tilt, 5)}deg`,
-    },
-  })),
-}))
+const gutters = [
+  { side: 'left', stickers: scatter(shuffledKinds.slice(0, stickersPerGutter)) },
+  { side: 'right', stickers: scatter(shuffledKinds.slice(stickersPerGutter)) },
+]
 </script>
 
 <template>
   <div class="sticker-background" aria-hidden="true">
-    <div v-for="rail in rails" :key="rail.side" class="rail" :class="rail.side">
+    <div v-for="gutter in gutters" :key="gutter.side" class="gutter" :class="gutter.side">
       <span
-        v-for="sticker in rail.stickers"
+        v-for="sticker in gutter.stickers"
         :key="sticker.kind"
         class="sticker"
         :class="sticker.kind"
@@ -41,6 +58,7 @@ const rails = Object.entries(layout).map(([side, stickers]) => ({
       >
         <span v-if="sticker.kind === 'terminal'">&gt;_</span>
         <span v-else-if="sticker.kind === 'javascript'">JS</span>
+        <span v-else-if="sticker.kind === 'code'">{&nbsp;}</span>
       </span>
     </div>
   </div>
@@ -48,15 +66,18 @@ const rails = Object.entries(layout).map(([side, stickers]) => ({
 
 <style scoped>
 .sticker-background {
-  --sticker-edge: #e1d6bd;
-  --plastic: #c6baa4;
-  --plastic-shadow: #817969;
-  --sticker-shadow: #03070e;
+  --sticker-edge: color-mix(in oklab, var(--color-control), var(--color-accent) 26%);
+  --sticker-shell: color-mix(in oklab, var(--color-surface), var(--color-muted) 35%);
+  --sticker-shade: color-mix(in oklab, var(--color-line), var(--color-canvas) 30%);
+  --sticker-highlight: color-mix(in oklab, var(--color-muted), var(--color-accent) 22%);
+  --sticker-accent: color-mix(in oklab, var(--color-surface), var(--color-accent) 44%);
+  --sticker-shadow: color-mix(in oklab, black, var(--color-canvas) 48%);
   --outline: 0 0 0 2px var(--sticker-edge), 3px 5px 0 1px var(--sticker-shadow);
   position: absolute;
   z-index: -1;
   inset: 0;
   display: none;
+  container-type: size;
   overflow: clip;
   pointer-events: none;
   user-select: none;
@@ -64,17 +85,18 @@ const rails = Object.entries(layout).map(([side, stickers]) => ({
 
 @media (width >= 80rem) {
   .sticker-background {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) var(--container-5xl) minmax(0, 1fr);
+    display: block;
   }
 }
 
-.rail {
-  position: relative;
-  width: min(100%, 16rem);
+.gutter {
+  --rows: 5;
+  position: absolute;
+  inset-block: 0;
+  width: calc((100% - var(--container-5xl)) / 2);
 }
 
-.rail::before {
+.gutter::before {
   position: absolute;
   inset: 0;
   background: radial-gradient(circle, var(--color-control) 1px, transparent 1px) 50% 0 / 16px 16px;
@@ -84,31 +106,37 @@ const rails = Object.entries(layout).map(([side, stickers]) => ({
 }
 
 .left {
-  grid-column: 1;
-  justify-self: end;
+  left: 0;
 }
 
 .right {
-  grid-column: 3;
-  justify-self: start;
+  right: 0;
 }
 
 .sticker {
+  --inline-inset: 2.875rem;
+  --block-inset: 3rem;
+  --row-gap: 4.25rem;
+  --reserved-height: calc(2 * var(--block-inset) + (var(--rows) - 1) * var(--row-gap));
   position: absolute;
-  top: var(--y);
-  left: clamp(3.25rem, var(--x), 100% - 3.25rem);
+  /* Reserve room for the rotated artwork and a minimum gap between stickers. */
+  top: calc(
+    var(--block-inset) + var(--row) * var(--row-gap) + (100% - var(--reserved-height)) * var(--y)
+  );
+  left: calc(var(--inline-inset) + (100% - 2 * var(--inline-inset)) * var(--x));
   translate: -50% -50%;
   rotate: var(--tilt);
-  opacity: 0.72;
+  scale: var(--scale);
+  opacity: 0.82;
 }
 
 .terminal {
   width: 4.5rem;
   padding: 0.3rem;
   border-radius: 0.45rem;
-  background: var(--plastic);
+  background: var(--sticker-shell);
   box-shadow:
-    inset 0 -3px var(--plastic-shadow),
+    inset 0 -3px var(--sticker-shade),
     var(--outline);
 }
 
@@ -116,8 +144,8 @@ const rails = Object.entries(layout).map(([side, stickers]) => ({
   display: block;
   padding: 0.32rem 0.42rem;
   border-radius: 0.2rem;
-  background: repeating-linear-gradient(#112827 0 2px, #162e2d 2px 4px);
-  box-shadow: inset 0 0 0 1px #081b1b;
+  background: repeating-linear-gradient(var(--color-surface) 0 2px, var(--sticker-shade) 2px 4px);
+  box-shadow: inset 0 0 0 1px var(--color-canvas);
   color: var(--color-accent-strong);
   font: bold 1rem/1.25 var(--font-mono);
 }
@@ -129,11 +157,11 @@ const rails = Object.entries(layout).map(([side, stickers]) => ({
   place-items: end;
   padding: 0.22rem 0.28rem;
   border-radius: 0.25rem;
-  background: #ddba57;
+  background: var(--sticker-accent);
   box-shadow:
-    inset 0 -3px #aa8636,
+    inset 0 -3px var(--color-accent-soft),
     var(--outline);
-  color: #282012;
+  color: var(--color-accent-soft-ink);
   font: 900 1.3rem/1 var(--font-sans);
 }
 
@@ -141,9 +169,9 @@ const rails = Object.entries(layout).map(([side, stickers]) => ({
   width: 5rem;
   height: 2.15rem;
   border-radius: 0.25rem;
-  background: var(--plastic);
+  background: var(--sticker-shell);
   box-shadow:
-    inset 0 -3px var(--plastic-shadow),
+    inset 0 -3px var(--sticker-shade),
     var(--outline);
 }
 
@@ -157,16 +185,16 @@ const rails = Object.entries(layout).map(([side, stickers]) => ({
   inset: 5px 5px auto;
   height: 16px;
   background:
-    repeating-linear-gradient(to right, transparent 0 5px, var(--plastic-shadow) 5px 7px),
-    repeating-linear-gradient(#ece0c9 0 4px, var(--plastic-shadow) 4px 6px);
+    repeating-linear-gradient(to right, transparent 0 5px, var(--sticker-shade) 5px 7px),
+    repeating-linear-gradient(var(--sticker-highlight) 0 4px, var(--sticker-shade) 4px 6px);
 }
 
 .keyboard::after {
   inset: auto 19px 7px;
   height: 4px;
   border-radius: 1px;
-  background: #eee2cb;
-  box-shadow: 0 1px var(--plastic-shadow);
+  background: var(--sticker-highlight);
+  box-shadow: 0 1px var(--sticker-shade);
 }
 
 .mouse {
@@ -174,9 +202,9 @@ const rails = Object.entries(layout).map(([side, stickers]) => ({
   height: 3.1rem;
   margin-top: 0.45rem;
   border-radius: 45% 45% 42% 42%;
-  background: var(--plastic);
+  background: var(--sticker-shell);
   box-shadow:
-    inset -3px -4px var(--plastic-shadow),
+    inset -3px -4px var(--sticker-shade),
     var(--outline);
 }
 
@@ -195,9 +223,14 @@ const rails = Object.entries(layout).map(([side, stickers]) => ({
 .mouse::after {
   position: absolute;
   inset: 0 0 58%;
-  border-bottom: 2px solid var(--plastic-shadow);
+  border-bottom: 2px solid var(--sticker-shade);
   border-radius: 45% 45% 0 0;
-  background: linear-gradient(90deg, #ded3bb 47%, var(--plastic-shadow) 47% 53%, #ded3bb 53%);
+  background: linear-gradient(
+    90deg,
+    var(--sticker-edge) 47%,
+    var(--sticker-shade) 47% 53%,
+    var(--sticker-edge) 53%
+  );
   content: '';
 }
 
@@ -205,9 +238,9 @@ const rails = Object.entries(layout).map(([side, stickers]) => ({
   width: 3.25rem;
   aspect-ratio: 1;
   border-radius: 0.25rem 0.7rem 0.25rem 0.25rem;
-  background: #807797;
+  background: var(--sticker-shell);
   box-shadow:
-    inset 0 -3px #524963,
+    inset 0 -3px var(--sticker-shade),
     var(--outline);
 }
 
@@ -216,7 +249,12 @@ const rails = Object.entries(layout).map(([side, stickers]) => ({
   inset: 0 0.75rem auto 0.55rem;
   height: 0.95rem;
   border-radius: 0 0 0.12rem 0.12rem;
-  background: linear-gradient(90deg, #b4b5ba 60%, #494451 60% 82%, #b4b5ba 82%);
+  background: linear-gradient(
+    90deg,
+    var(--sticker-highlight) 60%,
+    var(--sticker-shade) 60% 82%,
+    var(--sticker-highlight) 82%
+  );
   content: '';
 }
 
@@ -227,10 +265,10 @@ const rails = Object.entries(layout).map(([side, stickers]) => ({
   border-radius: 0.12rem;
   background: linear-gradient(
     to bottom,
-    #d9a4a2 25%,
-    #ece0c9 25% 64%,
-    #b9ab9e 64% 70%,
-    #ece0c9 70%
+    var(--sticker-accent) 25%,
+    var(--sticker-highlight) 25% 64%,
+    var(--sticker-edge) 64% 70%,
+    var(--sticker-highlight) 70%
   );
   content: '';
 }
@@ -244,7 +282,7 @@ const rails = Object.entries(layout).map(([side, stickers]) => ({
 .cursor::before {
   position: absolute;
   inset: 0;
-  background: var(--sticker-edge);
+  background: linear-gradient(135deg, var(--sticker-highlight), var(--sticker-edge));
   clip-path: polygon(
     8% 0,
     18% 0,
@@ -268,5 +306,119 @@ const rails = Object.entries(layout).map(([side, stickers]) => ({
     8% 91%
   );
   content: '';
+}
+
+.monitor {
+  width: 3.3rem;
+  height: 2.45rem;
+  margin-top: -0.2rem;
+  border-radius: 0.4rem;
+  background: var(--sticker-shell);
+  box-shadow:
+    inset 0 -3px var(--sticker-shade),
+    var(--outline);
+}
+
+.monitor::before {
+  position: absolute;
+  inset: 0.3rem 0.35rem 0.55rem;
+  border-radius: 0.3rem;
+  background: repeating-linear-gradient(var(--color-surface) 0 2px, var(--sticker-shade) 2px 4px);
+  box-shadow: inset 0 -1px var(--sticker-accent);
+  content: '';
+}
+
+.monitor::after {
+  position: absolute;
+  inset: 100% 0.75rem auto;
+  height: 0.42rem;
+  border-radius: 0 0 0.2rem 0.2rem;
+  background: var(--sticker-edge);
+  content: '';
+}
+
+.cassette {
+  width: 3.85rem;
+  height: 2.45rem;
+  border-radius: 0.25rem;
+  background: var(--sticker-shell);
+  box-shadow:
+    inset 0 -3px var(--sticker-shade),
+    var(--outline);
+}
+
+.cassette::before {
+  position: absolute;
+  inset: 0.35rem 0.45rem auto;
+  height: 0.9rem;
+  border-radius: 0.15rem;
+  background:
+    radial-gradient(circle at 24% center, var(--sticker-highlight) 3px, transparent 3.5px),
+    radial-gradient(circle at 76% center, var(--sticker-highlight) 3px, transparent 3.5px),
+    var(--color-surface);
+  content: '';
+}
+
+.cassette::after {
+  position: absolute;
+  inset: auto 0.85rem 0.25rem;
+  height: 0.65rem;
+  clip-path: polygon(16% 0, 84% 0, 100% 100%, 0 100%);
+  background: var(--sticker-accent);
+  content: '';
+}
+
+.chip {
+  width: 3.25rem;
+  height: 2.6rem;
+  background: repeating-linear-gradient(to bottom, var(--sticker-edge) 0 3px, transparent 3px 7px)
+    center / 100% 1.55rem no-repeat;
+}
+
+.chip::before {
+  position: absolute;
+  inset: 0 0.45rem;
+  border-radius: 0.25rem;
+  background:
+    radial-gradient(circle at 50% 0, var(--sticker-shade) 0.3rem, transparent 0.33rem),
+    var(--sticker-shell);
+  box-shadow: var(--outline);
+  content: '';
+}
+
+.chip::after {
+  position: absolute;
+  inset: 0.68rem 1rem;
+  border-radius: 0.15rem;
+  background: var(--color-accent-soft);
+  box-shadow: inset 0 0 0 1px var(--sticker-accent);
+  content: '';
+}
+
+.code {
+  display: grid;
+  place-items: center;
+  padding: 0.3rem 0.5rem;
+  border-radius: 0.55rem;
+  background: var(--color-surface);
+  box-shadow: var(--outline);
+  color: var(--sticker-highlight);
+  font: bold 1.1rem/1.25 var(--font-mono);
+}
+
+@container (height < 23rem) {
+  .gutter {
+    --rows: 3;
+  }
+
+  .sticker:nth-child(n + 4) {
+    display: none;
+  }
+}
+
+@container (height < 14.5rem) {
+  .sticker {
+    display: none;
+  }
 }
 </style>
