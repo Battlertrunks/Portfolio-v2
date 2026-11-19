@@ -154,6 +154,9 @@ onBeforeUnmount(() => {
   --pitch: -13deg;
   --yaw: -29deg;
   --roll: 6deg;
+  --float-distance: 0.35em;
+  --float-duration: 5.8s;
+  --float-delay: -1.7s;
   top: 24%;
   right: clamp(1rem, calc((100% - 75rem) / 2), 12rem);
 }
@@ -163,6 +166,10 @@ onBeforeUnmount(() => {
   --yaw: -22deg;
   --roll: -11deg;
   --scroll-depth: 0.7;
+  --float-distance: 0.45em;
+  --float-duration: 4.3s;
+  --float-delay: -5.6s;
+  --float-turn: 12deg;
   top: 70%;
   left: clamp(1rem, calc((100% - 77rem) / 2), 10rem);
 }
@@ -172,6 +179,10 @@ onBeforeUnmount(() => {
   --yaw: -22deg;
   --roll: 16deg;
   --scroll-depth: 0.55;
+  --float-distance: 0.55em;
+  --float-duration: 3.6s;
+  --float-delay: -0.8s;
+  --float-turn: 15deg;
   top: 30%;
   left: clamp(1rem, calc((100% - 76rem) / 2), 10rem);
 }
@@ -181,6 +192,9 @@ onBeforeUnmount(() => {
   --yaw: -32deg;
   --roll: -8deg;
   --scroll-depth: 0.85;
+  --float-distance: 0.3em;
+  --float-duration: 6.7s;
+  --float-delay: -9.4s;
   top: 66%;
   right: clamp(1rem, calc((100% - 74rem) / 2), 11rem);
 }
@@ -194,6 +208,18 @@ onBeforeUnmount(() => {
   transform: translateY(var(--hover-lift)) rotateX(var(--pitch))
     rotateY(calc(var(--yaw) + var(--hover-tilt))) rotateZ(var(--roll));
   transition: transform 280ms ease-out;
+  animation: float-in-place var(--float-duration) ease-in-out var(--float-delay) infinite alternate;
+}
+
+@keyframes float-in-place {
+  from {
+    translate: 0 calc(var(--float-distance) * -1);
+    rotate: y calc(var(--float-turn, 0deg) * -1);
+  }
+  to {
+    translate: 0 var(--float-distance);
+    rotate: y var(--float-turn, 0deg);
+  }
 }
 
 .object[data-hovered] {
@@ -362,6 +388,10 @@ onBeforeUnmount(() => {
   .object[data-hovered] {
     --hover-tilt: 0deg;
     --hover-lift: 0em;
+  }
+
+  .model {
+    animation: none;
   }
 }
 </style>
