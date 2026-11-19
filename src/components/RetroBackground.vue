@@ -155,8 +155,9 @@ onBeforeUnmount(() => {
   --yaw: -29deg;
   --roll: 6deg;
   --float-distance: 0.35em;
-  --float-duration: 5.8s;
+  --float-duration: 6.4s;
   --float-delay: -1.7s;
+  --float-turn: 10deg;
   top: 24%;
   right: clamp(1rem, calc((100% - 75rem) / 2), 12rem);
 }
@@ -193,8 +194,9 @@ onBeforeUnmount(() => {
   --roll: -8deg;
   --scroll-depth: 0.85;
   --float-distance: 0.3em;
-  --float-duration: 6.7s;
+  --float-duration: 5.2s;
   --float-delay: -9.4s;
+  --float-turn: 13deg;
   top: 66%;
   right: clamp(1rem, calc((100% - 74rem) / 2), 11rem);
 }
