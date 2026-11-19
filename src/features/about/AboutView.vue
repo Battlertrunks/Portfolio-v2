@@ -28,27 +28,33 @@ function branchPath(seed: number) {
 <template>
   <PageContainer>
     <section class="py-16 sm:py-24" aria-labelledby="about-title">
-      <SectionHeading
-        heading-id="about-title"
-        eyebrow="About"
-        title="A full-stack developer with a backend focus."
-        :level="1"
-        description="I build systems end to end, spending most of my time on the APIs, data, and server-side logic that make the interface possible."
-      />
+      <div class="retro-intro">
+        <SectionHeading
+          heading-id="about-title"
+          eyebrow="About"
+          title="A full-stack developer with a backend focus."
+          :level="1"
+          description="I build systems end to end, spending most of my time on the APIs, data, and server-side logic that make the interface possible."
+        />
+        <div class="retro-object-slot" data-retro-object="terminal" aria-hidden="true" />
+      </div>
 
       <div class="mt-10 max-w-2xl space-y-5 text-base leading-7 text-muted">
         <p>
           I'm Gavin, a full-stack developer who leans toward the backend. I enjoy building and
-          learning how to make systems reliable and maintainable before they reach the user interface.
+          learning how to make systems reliable and maintainable before they reach the user
+          interface.
         </p>
         <p>
           My main tools are TypeScript and Node.js on the server, with Vue 3 and Vuetify on the
           client. I care about clear boundaries, useful error messages, and tests that cover the
-          paths users actually take. I prioritize building systems that are robust and maintainable from the start.
+          paths users actually take. I prioritize building systems that are robust and maintainable
+          from the start.
         </p>
         <p>
           Outside of work, I'm usually experimenting with a side project, reading about system
-          design, or refining this portfolio. I enjoy tinkering with different agentic workflows and approaches to problem-solving with my local AI server
+          design, or refining this portfolio. I enjoy tinkering with different agentic workflows and
+          approaches to problem-solving with my local AI server
         </p>
       </div>
     </section>

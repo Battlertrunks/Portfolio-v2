@@ -7,7 +7,7 @@ import RetroBackground from '@/components/RetroBackground.vue'
 </script>
 
 <template>
-  <div class="isolate flex min-h-dvh flex-col">
+  <div class="relative isolate flex min-h-dvh flex-col">
     <RetroBackground />
     <a
       href="#main-content"

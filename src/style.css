@@ -111,3 +111,17 @@
     }
   }
 }
+
+@layer components {
+  .retro-intro {
+    @apply grid items-center gap-4 sm:grid-cols-[minmax(0,1fr)_12rem] sm:gap-8;
+  }
+
+  .retro-object-slot {
+    min-block-size: clamp(8rem, 18vw, 11rem);
+  }
+
+  .retro-object-slot[data-retro-object='monitor'] {
+    min-block-size: clamp(10rem, 24vw, 13.5rem);
+  }
+}

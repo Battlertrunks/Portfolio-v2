@@ -8,12 +8,15 @@ import { educationNodes, experienceNodes } from '@/features/experience/experienc
 <template>
   <PageContainer>
     <section class="py-16 sm:pb-24" aria-labelledby="employment-title">
-      <SectionHeading
-        heading-id="employment-title"
-        eyebrow="Professional experience"
-        title="Where I've put it to work."
-        description="My professional journey and experience as a Software Developer"
-      />
+      <div class="retro-intro">
+        <SectionHeading
+          heading-id="employment-title"
+          eyebrow="Professional experience"
+          title="Where I've put it to work."
+          description="My professional journey and experience as a Software Developer"
+        />
+        <div class="retro-object-slot" data-retro-object="tower" aria-hidden="true" />
+      </div>
 
       <NodalChain label="Roles held at DocNetwork" :entries="experienceNodes" class="mt-10" />
     </section>

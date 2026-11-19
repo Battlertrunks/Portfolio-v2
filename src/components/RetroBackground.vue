@@ -1,12 +1,47 @@
 <script setup lang="ts">
-import { onBeforeUnmount, onMounted, useTemplateRef } from 'vue'
+import { onBeforeUnmount, onMounted, useTemplateRef, watch } from 'vue'
+import { useRoute } from 'vue-router'
 
 const background = useTemplateRef<HTMLElement>('background')
+const route = useRoute()
 
-let objects: HTMLElement[] = []
+let activeObject: HTMLElement | null = null
+let slot: HTMLElement | null = null
+let resizeObserver: ResizeObserver | undefined
 let hoveredObject: HTMLElement | undefined
 let lastScrollY = 0
 let scrollReset: number | undefined
+
+function positionObject() {
+  if (!background.value || !slot || !activeObject) return
+
+  const stage = slot.getBoundingClientRect()
+  const scene = background.value.getBoundingClientRect()
+  activeObject.style.left = `${stage.left - scene.left + stage.width / 2}px`
+  activeObject.style.top = `${stage.top - scene.top + stage.height / 2}px`
+}
+
+function selectObject() {
+  const scene = background.value
+  const main = scene?.parentElement?.querySelector('main')
+  slot = main?.querySelector<HTMLElement>('[data-retro-object]') ?? null
+  const object = slot
+    ? scene?.querySelector<HTMLElement>(`.object.${slot.dataset.retroObject}`)
+    : null
+
+  // Keep the outgoing model at its old coordinates while the next route takes over.
+  clearHover()
+  activeObject?.removeAttribute('data-active')
+  activeObject = object ?? null
+  positionObject()
+  activeObject?.setAttribute('data-active', '')
+
+  resizeObserver?.disconnect()
+  if (slot && main) {
+    resizeObserver?.observe(slot)
+    resizeObserver?.observe(main)
+  }
+}
 
 function updateScrollDirection() {
   const scrollY = Math.max(0, window.scrollY)
@@ -30,14 +65,12 @@ function setHoveredObject(object?: HTMLElement) {
 
 function updateHover(event: PointerEvent) {
   if (event.pointerType !== 'mouse') return
+  if (!activeObject) return
 
   const { clientX, clientY } = event
-  const object = objects.find((object) => {
-    const { left, right, top, bottom } = object.getBoundingClientRect()
-    return clientX >= left && clientX <= right && clientY >= top && clientY <= bottom
-  })
-
-  setHoveredObject(object)
+  const { left, right, top, bottom } = activeObject.getBoundingClientRect()
+  const isOverObject = clientX >= left && clientX <= right && clientY >= top && clientY <= bottom
+  setHoveredObject(isOverObject ? activeObject : undefined)
 }
 
 function clearHover() {
@@ -45,16 +78,22 @@ function clearHover() {
 }
 
 onMounted(() => {
-  objects = Array.from(background.value?.querySelectorAll<HTMLElement>('.object') ?? [])
+  if (typeof ResizeObserver !== 'undefined') resizeObserver = new ResizeObserver(positionObject)
+  selectObject()
   lastScrollY = Math.max(0, window.scrollY)
+  window.addEventListener('resize', positionObject)
   window.addEventListener('scroll', updateScrollDirection, { passive: true })
   window.addEventListener('pointermove', updateHover, { passive: true })
   document.documentElement.addEventListener('pointerleave', clearHover)
   window.addEventListener('blur', clearHover)
 })
 
+watch(() => route.name, selectObject, { flush: 'post' })
+
 onBeforeUnmount(() => {
+  resizeObserver?.disconnect()
   window.clearTimeout(scrollReset)
+  window.removeEventListener('resize', positionObject)
   window.removeEventListener('scroll', updateScrollDirection)
   window.removeEventListener('pointermove', updateHover)
   document.documentElement.removeEventListener('pointerleave', clearHover)
@@ -118,14 +157,14 @@ onBeforeUnmount(() => {
 
 <style scoped>
 .retro-background {
-  --front-color: color-mix(in oklab, var(--color-canvas), var(--color-muted) 14%);
-  --top-color: color-mix(in oklab, var(--color-canvas), var(--color-muted) 19%);
-  --side-color: color-mix(in oklab, var(--color-canvas), var(--color-muted) 9%);
-  --edge-color: color-mix(in oklab, var(--color-canvas), var(--color-muted) 25%);
-  position: fixed;
+  --front-color: color-mix(in oklab, var(--color-canvas), var(--color-muted) 24%);
+  --top-color: color-mix(in oklab, var(--color-canvas), var(--color-muted) 32%);
+  --side-color: color-mix(in oklab, var(--color-canvas), var(--color-muted) 17%);
+  --edge-color: color-mix(in oklab, var(--color-canvas), var(--color-muted) 40%);
+  position: absolute;
   z-index: -1;
   inset: 0;
-  overflow: hidden;
+  overflow: clip;
   pointer-events: none;
   user-select: none;
 }
@@ -136,10 +175,24 @@ onBeforeUnmount(() => {
   --hover-lift: 0em;
   position: absolute;
   padding: 0.6em;
-  font-size: clamp(0.5rem, 1.12vw, 1rem);
+  font-size: clamp(1rem, 4vw, var(--object-size, 1.25rem));
   perspective: 34em;
-  translate: 0 calc(var(--scroll-offset, 0px) * var(--scroll-depth));
-  transition: translate 350ms ease-out;
+  visibility: hidden;
+  opacity: 0;
+  scale: 0.94;
+  translate: -50% calc(-50% + var(--scroll-offset, 0px) * var(--scroll-depth) + 12px);
+  transition:
+    visibility 260ms,
+    opacity 260ms ease,
+    scale 350ms ease-out,
+    translate 350ms ease-out;
+}
+
+.object[data-active] {
+  visibility: visible;
+  opacity: 1;
+  scale: 1;
+  translate: -50% calc(-50% + var(--scroll-offset, 0px) * var(--scroll-depth));
 }
 
 .retro-background[data-scroll='down'] {
@@ -158,11 +211,10 @@ onBeforeUnmount(() => {
   --float-duration: 6.4s;
   --float-delay: -1.7s;
   --float-turn: 10deg;
-  top: 24%;
-  right: clamp(1rem, calc((100% - 75rem) / 2), 12rem);
 }
 
 .terminal {
+  --object-size: 1.5rem;
   --pitch: -15deg;
   --yaw: -22deg;
   --roll: -11deg;
@@ -171,11 +223,10 @@ onBeforeUnmount(() => {
   --float-duration: 4.3s;
   --float-delay: -5.6s;
   --float-turn: 12deg;
-  top: 70%;
-  left: clamp(1rem, calc((100% - 77rem) / 2), 10rem);
 }
 
 .floppy {
+  --object-size: 1.65rem;
   --pitch: -17deg;
   --yaw: -22deg;
   --roll: 16deg;
@@ -184,11 +235,10 @@ onBeforeUnmount(() => {
   --float-duration: 3.6s;
   --float-delay: -0.8s;
   --float-turn: 15deg;
-  top: 30%;
-  left: clamp(1rem, calc((100% - 76rem) / 2), 10rem);
 }
 
 .tower {
+  --object-size: 1.45rem;
   --pitch: -12deg;
   --yaw: -32deg;
   --roll: -8deg;
@@ -197,8 +247,6 @@ onBeforeUnmount(() => {
   --float-duration: 5.2s;
   --float-delay: -9.4s;
   --float-turn: 13deg;
-  top: 66%;
-  right: clamp(1rem, calc((100% - 74rem) / 2), 11rem);
 }
 
 .model,
@@ -225,10 +273,10 @@ onBeforeUnmount(() => {
 }
 
 .object[data-hovered] {
-  --front-color: color-mix(in oklab, var(--color-canvas), var(--color-muted) 21%);
-  --top-color: color-mix(in oklab, var(--color-canvas), var(--color-muted) 26%);
-  --side-color: color-mix(in oklab, var(--color-canvas), var(--color-muted) 14%);
-  --edge-color: color-mix(in oklab, var(--color-canvas), var(--color-muted) 35%);
+  --front-color: color-mix(in oklab, var(--color-canvas), var(--color-muted) 32%);
+  --top-color: color-mix(in oklab, var(--color-canvas), var(--color-muted) 38%);
+  --side-color: color-mix(in oklab, var(--color-canvas), var(--color-muted) 23%);
+  --edge-color: color-mix(in oklab, var(--color-canvas), var(--color-muted) 49%);
   --hover-tilt: 8deg;
   --hover-lift: -0.3em;
 }
@@ -375,15 +423,11 @@ onBeforeUnmount(() => {
   inset: 50% 18% 18%;
 }
 
-@media (max-width: 40rem) {
-  .retro-background {
-    opacity: 0.7;
-  }
-}
-
 @media (prefers-reduced-motion: reduce) {
-  .object {
-    translate: none;
+  .object,
+  .object[data-active] {
+    translate: -50% -50%;
+    scale: 1;
     transition: none;
   }
 
