@@ -25,7 +25,7 @@ const principles = [
 
 <template>
   <PageContainer>
-    <section class="py-16 sm:py-24" aria-labelledby="hero-title">
+    <section class="pt-16 pb-8 sm:pt-24 sm:pb-12" aria-labelledby="hero-title">
       <p class="text-sm font-semibold tracking-widest text-accent uppercase">
         Full-stack developer
       </p>
@@ -43,6 +43,7 @@ const principles = [
         <BaseButton to="/projects" size="lg">View projects</BaseButton>
         <BaseButton to="/about" variant="secondary" size="lg">About me</BaseButton>
       </div>
+      <div class="retro-object-slot mt-8 sm:mt-10" data-retro-object="monitor" aria-hidden="true" />
     </section>
 
     <section aria-labelledby="principles-title" class="pb-16 sm:pb-24">
@@ -66,7 +67,8 @@ const principles = [
           Let's build something dependable.
         </h2>
         <p class="mt-3 max-w-xl leading-7 text-accent-soft-ink">
-          I am committed to building dependable full-stack applications that prioritize clear data modeling, robust API design, and accessible user interfaces.
+          I am committed to building dependable full-stack applications that prioritize clear data
+          modeling, robust API design, and accessible user interfaces.
         </p>
         <div class="mt-6">
           <BaseButton to="/about">More about me</BaseButton>

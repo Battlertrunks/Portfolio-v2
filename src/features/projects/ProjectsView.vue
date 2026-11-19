@@ -94,13 +94,16 @@ onBeforeUnmount(() => {
 <template>
   <PageContainer>
     <section class="py-16 sm:py-24" aria-labelledby="projects-title">
-      <SectionHeading
-        heading-id="projects-title"
-        eyebrow="Projects"
-        title="Things I've built and learned from."
-        :level="1"
-        description="A small selection of full-stack work. Each project is a chance to practice clear data modeling, dependable APIs, and accessible interfaces."
-      />
+      <div class="retro-intro">
+        <SectionHeading
+          heading-id="projects-title"
+          eyebrow="Projects"
+          title="Things I've built and learned from."
+          :level="1"
+          description="A small selection of full-stack work. Each project is a chance to practice clear data modeling, dependable APIs, and accessible interfaces."
+        />
+        <div class="retro-object-slot" data-retro-object="floppy" aria-hidden="true" />
+      </div>
 
       <div class="mt-12 grid gap-8 lg:grid-cols-[minmax(0,1fr)_14rem] lg:items-start lg:gap-10">
         <aside

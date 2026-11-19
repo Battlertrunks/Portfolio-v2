@@ -4,10 +4,11 @@ import { RouterView } from 'vue-router'
 import AppFooter from '@/components/AppFooter.vue'
 import AppHeader from '@/components/AppHeader.vue'
 import RetroBackground from '@/components/RetroBackground.vue'
+import RetroStickers from '@/components/RetroStickers.vue'
 </script>
 
 <template>
-  <div class="isolate flex min-h-dvh flex-col">
+  <div class="relative isolate flex min-h-dvh flex-col">
     <RetroBackground />
     <a
       href="#main-content"
@@ -16,7 +17,8 @@ import RetroBackground from '@/components/RetroBackground.vue'
       Skip to content
     </a>
     <AppHeader />
-    <main id="main-content" class="flex-1" tabindex="-1">
+    <main id="main-content" class="relative isolate flex-1" tabindex="-1">
+      <RetroStickers />
       <RouterView />
     </main>
     <AppFooter />
