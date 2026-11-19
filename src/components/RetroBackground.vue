@@ -3,17 +3,63 @@ import { onBeforeUnmount, onMounted, useTemplateRef } from 'vue'
 
 const background = useTemplateRef<HTMLElement>('background')
 
-function updateScrollOffset() {
-  const offset = Math.sin(Math.max(0, window.scrollY) / 220) * 12
-  background.value?.style.setProperty('--scroll-offset', `${offset}px`)
+let objects: HTMLElement[] = []
+let hoveredObject: HTMLElement | undefined
+let lastScrollY = 0
+let scrollReset: number | undefined
+
+function updateScrollDirection() {
+  const scrollY = Math.max(0, window.scrollY)
+  const delta = scrollY - lastScrollY
+  lastScrollY = scrollY
+
+  if (!delta || !background.value) return
+
+  background.value.dataset.scroll = delta > 0 ? 'down' : 'up'
+  window.clearTimeout(scrollReset)
+  scrollReset = window.setTimeout(() => background.value?.removeAttribute('data-scroll'), 180)
+}
+
+function setHoveredObject(object?: HTMLElement) {
+  if (object === hoveredObject) return
+
+  hoveredObject?.removeAttribute('data-hovered')
+  object?.setAttribute('data-hovered', '')
+  hoveredObject = object
+}
+
+function updateHover(event: PointerEvent) {
+  if (event.pointerType !== 'mouse') return
+
+  const { clientX, clientY } = event
+  const object = objects.find((object) => {
+    const { left, right, top, bottom } = object.getBoundingClientRect()
+    return clientX >= left && clientX <= right && clientY >= top && clientY <= bottom
+  })
+
+  setHoveredObject(object)
+}
+
+function clearHover() {
+  setHoveredObject()
 }
 
 onMounted(() => {
-  updateScrollOffset()
-  window.addEventListener('scroll', updateScrollOffset, { passive: true })
+  objects = Array.from(background.value?.querySelectorAll<HTMLElement>('.object') ?? [])
+  lastScrollY = Math.max(0, window.scrollY)
+  window.addEventListener('scroll', updateScrollDirection, { passive: true })
+  window.addEventListener('pointermove', updateHover, { passive: true })
+  document.documentElement.addEventListener('pointerleave', clearHover)
+  window.addEventListener('blur', clearHover)
 })
 
-onBeforeUnmount(() => window.removeEventListener('scroll', updateScrollOffset))
+onBeforeUnmount(() => {
+  window.clearTimeout(scrollReset)
+  window.removeEventListener('scroll', updateScrollDirection)
+  window.removeEventListener('pointermove', updateHover)
+  document.documentElement.removeEventListener('pointerleave', clearHover)
+  window.removeEventListener('blur', clearHover)
+})
 </script>
 
 <template>
@@ -45,6 +91,28 @@ onBeforeUnmount(() => window.removeEventListener('scroll', updateScrollOffset))
         <div class="face side" />
       </div>
     </div>
+
+    <div class="object floppy">
+      <div class="cuboid model floppy-case">
+        <div class="face front">
+          <div class="floppy-shutter" />
+          <div class="floppy-label" />
+        </div>
+        <div class="face top" />
+        <div class="face side" />
+      </div>
+    </div>
+
+    <div class="object tower">
+      <div class="cuboid model tower-case">
+        <div class="face front">
+          <div class="drive-bays" />
+          <div class="power-light" />
+        </div>
+        <div class="face top" />
+        <div class="face side"><div class="vents" /></div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -63,22 +131,58 @@ onBeforeUnmount(() => window.removeEventListener('scroll', updateScrollOffset))
 }
 
 .object {
+  --scroll-depth: 1;
+  --hover-tilt: 0deg;
+  --hover-lift: 0em;
   position: absolute;
+  padding: 0.6em;
   font-size: clamp(0.5rem, 1.12vw, 1rem);
   perspective: 34em;
-  transition: translate 850ms ease-out;
+  translate: 0 calc(var(--scroll-offset, 0px) * var(--scroll-depth));
+  transition: translate 350ms ease-out;
+}
+
+.retro-background[data-scroll='down'] {
+  --scroll-offset: -16px;
+}
+
+.retro-background[data-scroll='up'] {
+  --scroll-offset: 16px;
 }
 
 .monitor {
+  --pitch: -13deg;
+  --yaw: -29deg;
+  --roll: 6deg;
   top: 24%;
   right: clamp(1rem, calc((100% - 75rem) / 2), 12rem);
-  translate: 0 var(--scroll-offset, 0px);
 }
 
 .terminal {
+  --pitch: -15deg;
+  --yaw: -22deg;
+  --roll: -11deg;
+  --scroll-depth: 0.7;
   top: 70%;
   left: clamp(1rem, calc((100% - 77rem) / 2), 10rem);
-  translate: 0 calc(var(--scroll-offset, 0px) * -0.7);
+}
+
+.floppy {
+  --pitch: -17deg;
+  --yaw: -22deg;
+  --roll: 16deg;
+  --scroll-depth: 0.55;
+  top: 30%;
+  left: clamp(1rem, calc((100% - 76rem) / 2), 10rem);
+}
+
+.tower {
+  --pitch: -12deg;
+  --yaw: -32deg;
+  --roll: -8deg;
+  --scroll-depth: 0.85;
+  top: 66%;
+  right: clamp(1rem, calc((100% - 74rem) / 2), 11rem);
 }
 
 .model,
@@ -86,12 +190,19 @@ onBeforeUnmount(() => window.removeEventListener('scroll', updateScrollOffset))
   transform-style: preserve-3d;
 }
 
-.monitor .model {
-  transform: rotateX(-13deg) rotateY(-29deg) rotateZ(6deg);
+.model {
+  transform: translateY(var(--hover-lift)) rotateX(var(--pitch))
+    rotateY(calc(var(--yaw) + var(--hover-tilt))) rotateZ(var(--roll));
+  transition: transform 280ms ease-out;
 }
 
-.terminal .model {
-  transform: rotateX(-15deg) rotateY(-22deg) rotateZ(-11deg);
+.object[data-hovered] {
+  --front-color: color-mix(in oklab, var(--color-canvas), var(--color-muted) 21%);
+  --top-color: color-mix(in oklab, var(--color-canvas), var(--color-muted) 26%);
+  --side-color: color-mix(in oklab, var(--color-canvas), var(--color-muted) 14%);
+  --edge-color: color-mix(in oklab, var(--color-canvas), var(--color-muted) 35%);
+  --hover-tilt: 8deg;
+  --hover-lift: -0.3em;
 }
 
 .cuboid {
@@ -104,6 +215,9 @@ onBeforeUnmount(() => window.removeEventListener('scroll', updateScrollOffset))
   position: absolute;
   border: 1px solid color-mix(in oklab, var(--edge-color) 45%, var(--side-color));
   backface-visibility: hidden;
+  transition:
+    background-color 250ms ease-out,
+    border-color 250ms ease-out;
 }
 
 .front {
@@ -185,6 +299,54 @@ onBeforeUnmount(() => window.removeEventListener('scroll', updateScrollOffset))
   font: 600 1.65em var(--font-mono);
 }
 
+.floppy-case {
+  --width: 4.4em;
+  --height: 4.5em;
+  --depth: 0.45em;
+}
+
+.floppy-shutter {
+  position: absolute;
+  inset: 0 0.8em auto 1em;
+  height: 1.65em;
+  border-radius: 0 0 0.15em 0.15em;
+  background: linear-gradient(
+    to right,
+    var(--edge-color) 56%,
+    var(--color-canvas) 56% 80%,
+    var(--edge-color) 80%
+  );
+}
+
+.floppy-label {
+  position: absolute;
+  inset: 2.2em 0.45em 0.3em;
+  border: 1px solid var(--edge-color);
+  background: repeating-linear-gradient(var(--side-color) 0 0.4em, var(--front-color) 0.4em 0.48em);
+}
+
+.tower-case {
+  --width: 3.7em;
+  --height: 6.4em;
+  --depth: 3.3em;
+}
+
+.drive-bays {
+  position: absolute;
+  inset: 0.65em 0.45em auto;
+  height: 1.4em;
+  border: 1px solid var(--edge-color);
+  background: linear-gradient(
+    var(--side-color) 40%,
+    var(--color-canvas) 40% 55%,
+    var(--side-color) 55%
+  );
+}
+
+.tower .vents {
+  inset: 50% 18% 18%;
+}
+
 @media (max-width: 40rem) {
   .retro-background {
     opacity: 0.7;
@@ -195,6 +357,11 @@ onBeforeUnmount(() => window.removeEventListener('scroll', updateScrollOffset))
   .object {
     translate: none;
     transition: none;
+  }
+
+  .object[data-hovered] {
+    --hover-tilt: 0deg;
+    --hover-lift: 0em;
   }
 }
 </style>
