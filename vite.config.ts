@@ -16,4 +16,12 @@ export default defineConfig({
     include: ['tests/**/*.test.ts'],
     css: false,
   },
+  server: {
+    proxy: {
+      "/api": {
+        target: "http://localhost:8080",
+        changeOrigin: true
+      }
+    }
+  }
 })

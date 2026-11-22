@@ -5,11 +5,23 @@ import BaseCard from '@/components/BaseCard.vue'
 import PageContainer from '@/components/PageContainer.vue'
 import ProjectMediaGrid from '@/components/ProjectMediaGrid.vue'
 import SectionHeading from '@/components/SectionHeading.vue'
-import { projects } from '@/features/projects/projects.data'
-
-const activeProjectId = ref(projects[0]?.id ?? '')
+// import { projects } from '@/features/projects/projects.data'
+import { useProjects } from '@/composables/useProjects'
 let scrollFrame: number | null = null
 let isProjectSelectionLocked = false
+
+const {
+  projects,
+  error,
+  isLoading,
+  fetchProjects
+} = useProjects();
+
+onMounted(() => {
+  fetchProjects();
+})
+
+const activeProjectId = ref(projects.value[0]?.id ?? '')
 
 const scrollKeys = new Set(['ArrowDown', 'ArrowUp', 'PageDown', 'PageUp', 'Home', 'End', ' '])
 
@@ -30,14 +42,14 @@ function releaseProjectLockOnKeydown(event: KeyboardEvent) {
 }
 
 function updateActiveProject() {
-  if (projects.length === 0 || isProjectSelectionLocked) {
+  if (projects.value.length === 0 || isProjectSelectionLocked) {
     return
   }
 
   const activationOffset: number = 140
-  let nextActiveId = projects[0]?.id ?? ''
+  let nextActiveId = projects.value[0]?.id ?? ''
 
-  for (const project of projects) {
+  for (const project of projects.value) {
     const section = document.getElementById(project.id)
 
     if (section && section.getBoundingClientRect().top <= activationOffset) {
@@ -50,7 +62,7 @@ function updateActiveProject() {
   const isAtPageBottom = pageHeight > window.innerHeight && viewportBottom >= pageHeight - 8
 
   if (isAtPageBottom) {
-    nextActiveId = projects[projects.length - 1]?.id ?? nextActiveId
+    nextActiveId = projects.value[projects.value.length - 1]?.id ?? nextActiveId
   }
 
   activeProjectId.value = nextActiveId
