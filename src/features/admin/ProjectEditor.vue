@@ -1,68 +1,68 @@
 <script setup lang="ts">
-import { nextTick, onBeforeUnmount, onMounted, ref, useTemplateRef } from 'vue'
+import { nextTick, onBeforeUnmount, onMounted, ref, useTemplateRef } from 'vue';
 
-import BaseButton from '@/components/BaseButton.vue'
-import AdminMediaPreview from '@/features/admin/AdminMediaPreview.vue'
-import type { AdminProject, DraftProjectMedia, ProjectDraft } from '@/features/admin/adminProjects'
-import type { ProjectStatus } from '@/types'
+import BaseButton from '@/components/BaseButton.vue';
+import AdminMediaPreview from '@/features/admin/AdminMediaPreview.vue';
+import type { AdminProject, DraftProjectMedia, ProjectDraft } from '@/features/admin/adminProjects';
+import type { ProjectStatus } from '@/types';
 
-const { project } = defineProps<{ project: AdminProject | undefined }>()
-const emit = defineEmits<{ save: [draft: ProjectDraft]; cancel: [] }>()
+const { project } = defineProps<{ project: AdminProject | undefined }>();
+const emit = defineEmits<{ save: [draft: ProjectDraft]; cancel: [] }>();
 
-const dialog = useTemplateRef<HTMLDialogElement>('dialog')
-const fileInput = useTemplateRef<HTMLInputElement>('fileInput')
-const title = ref(project?.title ?? '')
-const timeline = ref(project?.timeline ?? '')
-const statuses: readonly ProjectStatus[] = ['Planned', 'In progress', 'Shipped']
-const status = ref<ProjectStatus>(project?.status ?? 'Planned')
-const tags = ref(project?.tags.join(', ') ?? '')
-const description = ref(project?.description ?? '')
-let nextAttachmentId = 0
+const dialog = useTemplateRef<HTMLDialogElement>('dialog');
+const fileInput = useTemplateRef<HTMLInputElement>('fileInput');
+const title = ref(project?.title ?? '');
+const timeline = ref(project?.timeline ?? '');
+const statuses: readonly ProjectStatus[] = ['Planned', 'In progress', 'Shipped'];
+const status = ref<ProjectStatus>(project?.status ?? 'Planned');
+const tags = ref(project?.tags.join(', ') ?? '');
+const description = ref(project?.description ?? '');
+let nextAttachmentId = 0;
 const attachments = ref(
   (project?.media ?? []).map((item) => ({ id: nextAttachmentId++, item: { ...item } })),
-)
-const fileError = ref('')
-const formError = ref('')
+);
+const fileError = ref('');
+const formError = ref('');
 
-onMounted(() => dialog.value?.showModal())
-onBeforeUnmount(() => dialog.value?.close())
+onMounted(() => dialog.value?.showModal());
+onBeforeUnmount(() => dialog.value?.close());
 
 function addFiles(event: Event) {
-  const input = event.currentTarget as HTMLInputElement
-  const files = Array.from(input.files ?? [])
-  fileError.value = ''
+  const input = event.currentTarget as HTMLInputElement;
+  const files = Array.from(input.files ?? []);
+  fileError.value = '';
 
   for (const file of files) {
-    const type = file.type.split('/')[0]
+    const type = file.type.split('/')[0];
     if (type !== 'image' && type !== 'video') {
-      fileError.value = 'Choose image or video files.'
-      continue
+      fileError.value = 'Choose image or video files.';
+      continue;
     }
 
     const item: DraftProjectMedia =
-      type === 'image' ? { type, file, alt: '' } : { type, file, label: file.name }
-    attachments.value.push({ id: nextAttachmentId++, item })
+      type === 'image' ? { type, file, alt: '' } : { type, file, label: file.name };
+    attachments.value.push({ id: nextAttachmentId++, item });
   }
 
-  input.value = ''
+  input.value = '';
 }
 
 async function removeAttachment(id: number) {
-  attachments.value = attachments.value.filter((attachment) => attachment.id !== id)
-  await nextTick()
-  fileInput.value?.focus()
+  attachments.value = attachments.value.filter((attachment) => attachment.id !== id);
+  await nextTick();
+  fileInput.value?.focus();
 }
 
 function save() {
-  const media = attachments.value.map(({ item }) => item)
+  const media = attachments.value.map(({ item }) => item);
 
   if (
     !title.value ||
     !description.value ||
     media.some((item) => !(item.type === 'image' ? item.alt : item.label))
   ) {
-    formError.value = 'Enter a title, description, and a label for each attachment.'
-    return
+    formError.value = 'Enter a title, description, and a label for each attachment.';
+    return;
   }
 
   emit('save', {
@@ -79,7 +79,7 @@ function save() {
     ],
     description: description.value,
     media,
-  })
+  });
 }
 </script>
 

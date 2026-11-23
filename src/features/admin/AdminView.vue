@@ -1,61 +1,61 @@
 <script setup lang="ts">
-import { computed, nextTick, ref, useTemplateRef } from 'vue'
+import { computed, nextTick, ref, useTemplateRef } from 'vue';
 
-import BaseButton from '@/components/BaseButton.vue'
-import BaseCard from '@/components/BaseCard.vue'
-import PageContainer from '@/components/PageContainer.vue'
-import SectionHeading from '@/components/SectionHeading.vue'
-import AdminProjectRow from '@/features/admin/AdminProjectRow.vue'
-import ProjectEditor from '@/features/admin/ProjectEditor.vue'
+import BaseButton from '@/components/BaseButton.vue';
+import BaseCard from '@/components/BaseCard.vue';
+import PageContainer from '@/components/PageContainer.vue';
+import SectionHeading from '@/components/SectionHeading.vue';
+import AdminProjectRow from '@/features/admin/AdminProjectRow.vue';
+import ProjectEditor from '@/features/admin/ProjectEditor.vue';
 import {
   initialAdminProjects,
   type AdminProject,
   type ProjectDraft,
-} from '@/features/admin/adminProjects'
+} from '@/features/admin/adminProjects';
 
-const projects = ref(initialAdminProjects())
-const showArchived = ref(false)
-const editor = ref<{ project?: AdminProject }>()
-const announcement = ref('')
-const activeFilter = useTemplateRef<HTMLButtonElement>('activeFilter')
-const archiveFilter = useTemplateRef<HTMLButtonElement>('archiveFilter')
-const archivedCount = computed(() => projects.value.filter((project) => project.archived).length)
+const projects = ref(initialAdminProjects());
+const showArchived = ref(false);
+const editor = ref<{ project?: AdminProject }>();
+const announcement = ref('');
+const activeFilter = useTemplateRef<HTMLButtonElement>('activeFilter');
+const archiveFilter = useTemplateRef<HTMLButtonElement>('archiveFilter');
+const archivedCount = computed(() => projects.value.filter((project) => project.archived).length);
 const visibleProjects = computed(() =>
   projects.value.filter((project) => project.archived === showArchived.value),
-)
+);
 
 function saveProject(draft: ProjectDraft) {
-  const existing = editor.value?.project
+  const existing = editor.value?.project;
 
   if (existing) {
     projects.value = projects.value.map((project) =>
       project.id === existing.id ? { ...project, ...draft } : project,
-    )
+    );
   } else {
-    projects.value.push({ ...draft, id: crypto.randomUUID(), archived: false })
-    showArchived.value = false
+    projects.value.push({ ...draft, id: crypto.randomUUID(), archived: false });
+    showArchived.value = false;
   }
 
-  announcement.value = `${draft.title} ${existing ? 'updated' : 'added'}.`
-  editor.value = undefined
+  announcement.value = `${draft.title} ${existing ? 'updated' : 'added'}.`;
+  editor.value = undefined;
 }
 
 async function focusCurrentFilter() {
-  await nextTick()
-  const filter = showArchived.value ? archiveFilter.value : activeFilter.value
-  filter?.focus()
+  await nextTick();
+  const filter = showArchived.value ? archiveFilter.value : activeFilter.value;
+  filter?.focus();
 }
 
 function toggleArchive(project: AdminProject) {
-  project.archived = !project.archived
-  announcement.value = `${project.title} ${project.archived ? 'archived' : 'restored'}.`
-  void focusCurrentFilter()
+  project.archived = !project.archived;
+  announcement.value = `${project.title} ${project.archived ? 'archived' : 'restored'}.`;
+  void focusCurrentFilter();
 }
 
 function deleteProject(project: AdminProject) {
-  projects.value = projects.value.filter(({ id }) => id !== project.id)
-  announcement.value = `${project.title} deleted.`
-  void focusCurrentFilter()
+  projects.value = projects.value.filter(({ id }) => id !== project.id);
+  announcement.value = `${project.title} deleted.`;
+  void focusCurrentFilter();
 }
 </script>
 

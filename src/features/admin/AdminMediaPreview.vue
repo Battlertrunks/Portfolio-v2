@@ -1,25 +1,25 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { ref, watch } from 'vue';
 
-import type { DraftProjectMedia } from '@/features/admin/adminProjects'
+import type { DraftProjectMedia } from '@/features/admin/adminProjects';
 
-const { item } = defineProps<{ item: DraftProjectMedia }>()
-const previewUrl = ref('')
+const { item } = defineProps<{ item: DraftProjectMedia }>();
+const previewUrl = ref('');
 
 watch(
   () => ('file' in item ? item.file : item.src),
   (source, _previous, onCleanup) => {
     if (typeof source === 'string') {
-      previewUrl.value = source
-      return
+      previewUrl.value = source;
+      return;
     }
 
-    const url = URL.createObjectURL(source)
-    previewUrl.value = url
-    onCleanup(() => URL.revokeObjectURL(url))
+    const url = URL.createObjectURL(source);
+    previewUrl.value = url;
+    onCleanup(() => URL.revokeObjectURL(url));
   },
   { immediate: true },
-)
+);
 </script>
 
 <template>

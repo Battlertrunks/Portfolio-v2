@@ -1,22 +1,22 @@
 <script setup lang="ts">
-import { nextTick, ref, useId, useTemplateRef } from 'vue'
+import { nextTick, ref, useId, useTemplateRef } from 'vue';
 
-import BaseButton from '@/components/BaseButton.vue'
-import type { AdminProject } from '@/features/admin/adminProjects'
+import BaseButton from '@/components/BaseButton.vue';
+import type { AdminProject } from '@/features/admin/adminProjects';
 
-const { project } = defineProps<{ project: AdminProject }>()
-const emit = defineEmits<{ edit: []; toggleArchive: []; delete: [] }>()
-const detailsId = useId()
-const expanded = ref(false)
-const confirmDelete = ref(false)
-const deleteButton = useTemplateRef<HTMLButtonElement>('deleteButton')
-const cancelDeleteButton = useTemplateRef<{ $el: HTMLButtonElement }>('cancelDeleteButton')
+const { project } = defineProps<{ project: AdminProject }>();
+const emit = defineEmits<{ edit: []; toggleArchive: []; delete: [] }>();
+const detailsId = useId();
+const expanded = ref(false);
+const confirmDelete = ref(false);
+const deleteButton = useTemplateRef<HTMLButtonElement>('deleteButton');
+const cancelDeleteButton = useTemplateRef<{ $el: HTMLButtonElement }>('cancelDeleteButton');
 
 async function setDeleteConfirmation(isOpen: boolean) {
-  confirmDelete.value = isOpen
-  await nextTick()
-  const button = isOpen ? cancelDeleteButton.value?.$el : deleteButton.value
-  button?.focus()
+  confirmDelete.value = isOpen;
+  await nextTick();
+  const button = isOpen ? cancelDeleteButton.value?.$el : deleteButton.value;
+  button?.focus();
 }
 </script>
 
