@@ -23,6 +23,7 @@ export type ProjectMedia = ProjectImage | ProjectVideo
 export interface Project {
   readonly id: string
   readonly title: string
+  readonly timeline?: string
   readonly description: string
   readonly tags: readonly string[]
   readonly status: ProjectStatus
