@@ -5,7 +5,7 @@ import BaseButton from '@/components/BaseButton.vue';
 import AdminMediaPreview from '@/features/admin/AdminMediaPreview.vue';
 import type { AdminProject, DraftProjectMedia, ProjectDraft } from '@/features/admin/adminProjects';
 import type { ProjectStatus } from '@/types';
-import { Trash2Icon } from 'lucide-vue-next';
+import { SquarePenIcon, Trash2Icon } from 'lucide-vue-next';
 
 const { project } = defineProps<{ project: AdminProject | undefined }>();
 const emit = defineEmits<{ save: [draft: ProjectDraft]; cancel: [] }>();
@@ -72,10 +72,9 @@ function save(): void {
 
   if (
     !title.value ||
-    !description.value ||
-    media.some((item) => !(item.type === 'image' ? item.alt : item.label))
+    !description.value
   ) {
-    formError.value = 'Enter a title, description, and a label for each attachment.';
+    formError.value = 'Enter a title and description for each attachment.';
     return;
   }
 
@@ -109,7 +108,7 @@ function onDrop(event: DragEvent, type: string): void {
     ref="dialog"
     aria-labelledby="project-editor-title"
     class="m-auto max-h-[calc(100dvh-2rem)] w-[calc(100%-2rem)] max-w-2xl overflow-y-auto overscroll-contain rounded-xl border border-line bg-surface text-ink shadow-2xl backdrop:bg-canvas/80 backdrop:backdrop-blur-sm"
-    @cancel.prevent="emit('cancel')"
+    @cancel.self.prevent="emit('cancel')"
   >
     <form @submit.prevent="save">
       <div class="border-b border-line px-5 py-4 sm:px-6">
@@ -174,9 +173,21 @@ function onDrop(event: DragEvent, type: string): void {
             @dragover.prevent
             @dragenter.prevent
           >
-            <div>
-              <h3>Drop your favorite files here</h3>
+            <div class="flex flex-col justify-center">
+              <h3>Drop Your Favorite Files Here</h3>
               <p class="text-sm text-muted">You can also click to select files.</p>
+              <BaseButton class="mt-4 self-center" @click="fileInput?.click()">
+                <SquarePenIcon class="h-4 w-4" /> Select file
+              </BaseButton>
+              <input
+                id="project-media"
+                ref="fileInput"
+                type="file"
+                accept="image/*,video/*"
+                multiple
+                hidden
+                @change="addFiles"
+              />
             </div>
           </div>
           <p v-if="fileError" role="alert" class="mt-2 text-sm text-rose-200">{{ fileError }}</p>
@@ -226,6 +237,6 @@ function onDrop(event: DragEvent, type: string): void {
 }
 
 .drop-zone-outline {
-  @apply rounded-md border border-control bg-canvas text-ink min-h-36 flex justify-center items-center
+  @apply rounded-md border border-dashed border-control bg-canvas text-ink min-h-48 flex justify-center items-center
 }
 </style>
