@@ -23,21 +23,23 @@ watch(
 </script>
 
 <template>
-  <img
-    v-if="item.type === 'image'"
-    :src="previewUrl"
-    :alt="item.alt"
-    class="aspect-video w-full rounded-md bg-surface object-contain"
-    loading="lazy"
-  />
-  <video
-    v-else
-    :src="previewUrl"
-    :poster="item.poster"
-    :aria-label="item.label"
-    class="aspect-video w-full rounded-md bg-surface object-contain"
-    controls
-    playsinline
-    preload="metadata"
-  />
+  <div class="max-w-36">
+    <img
+      v-if="item.type === 'image'"
+      :src="previewUrl"
+      :alt="item.alt"
+      class="aspect-video w-full rounded-md bg-surface object-contain"
+      loading="lazy"
+    />
+    <video
+      v-else
+      :src="previewUrl"
+      :poster="item.poster"
+      :aria-label="item.label"
+      class="aspect-video w-full rounded-md bg-surface object-contain"
+      controls
+      playsinline
+      preload="metadata"
+    />
+  </div>
 </template>

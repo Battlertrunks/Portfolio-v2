@@ -5,6 +5,7 @@ import BaseButton from '@/components/BaseButton.vue';
 import AdminMediaPreview from '@/features/admin/AdminMediaPreview.vue';
 import type { AdminProject, DraftProjectMedia, ProjectDraft } from '@/features/admin/adminProjects';
 import type { ProjectStatus } from '@/types';
+import { Trash2Icon } from 'lucide-vue-next';
 
 const { project } = defineProps<{ project: AdminProject | undefined }>();
 const emit = defineEmits<{ save: [draft: ProjectDraft]; cancel: [] }>();
@@ -94,6 +95,13 @@ function save(): void {
     media,
   });
 }
+
+function onDrop(event: DragEvent, type: string): void {
+  const files = event.dataTransfer?.files;
+  if (files) {
+    addFiles({ currentTarget: { files } } as unknown as Event);
+  }
+}
 </script>
 
 <template>
@@ -159,50 +167,35 @@ function save(): void {
           <legend class="pr-3 text-sm font-semibold">
             Media <span class="font-normal text-muted">(optional)</span>
           </legend>
-          <label for="project-media" class="field-label">Attach images or videos</label>
-          <input
-            id="project-media"
-            ref="fileInput"
-            type="file"
-            multiple
-            accept="image/*,video/*"
-            class="block w-full rounded-md border border-dashed border-control bg-canvas px-3 py-2 text-sm text-muted file:mr-3 file:rounded-sm file:border-0 file:bg-accent-soft file:px-2.5 file:py-1 file:font-semibold file:text-accent-soft-ink hover:file:bg-accent-soft/75"
-            @change="addFiles"
-          />
+
+          <div
+            class="drop-zone-outline"
+            @drop.prevent="onDrop($event, 'attachments')"
+            @dragover.prevent
+            @dragenter.prevent
+          >
+            <div>
+              <h3>Drop your favorite files here</h3>
+              <p class="text-sm text-muted">You can also click to select files.</p>
+            </div>
+          </div>
           <p v-if="fileError" role="alert" class="mt-2 text-sm text-rose-200">{{ fileError }}</p>
 
           <ul v-if="attachments.length" class="mt-4 space-y-3" aria-label="Attachments">
             <li
               v-for="({ id, item }, index) in attachments"
               :key="id"
-              class="grid items-start gap-3 rounded-lg border border-line bg-canvas p-3 sm:grid-cols-[8rem_minmax(0,1fr)]"
+              class="flex justify-between items-center rounded-lg border border-line bg-canvas p-6 sm:grid-cols-[8rem_minmax(0,1fr)]"
             >
               <AdminMediaPreview :item="item" />
-              <div class="min-w-0">
-                <label :for="`project-media-label-${id}`" class="field-label">
-                  {{ item.type === 'image' ? 'Alt text' : 'Video label' }}
-                </label>
-                <input
-                  v-if="item.type === 'image'"
-                  :id="`project-media-label-${id}`"
-                  v-model.trim="item.alt"
-                  class="field"
-                  required
-                />
-                <input
-                  v-else
-                  :id="`project-media-label-${id}`"
-                  v-model.trim="item.label"
-                  class="field"
-                  required
-                />
+              <div>
                 <button
                   type="button"
-                  class="mt-2 rounded-sm text-sm font-medium text-muted hover:text-rose-200"
+                  class="rounded-sm text-s bg-red-900 p-2 px-4 text-white hover:bg-red-700 transition flex items-center"
                   :aria-label="`Remove attachment ${index + 1}`"
                   @click="removeAttachment(id)"
                 >
-                  Remove
+                  <Trash2Icon class="mr-2 h-4 w-4" /> Remove
                 </button>
               </div>
             </li>
@@ -230,5 +223,9 @@ function save(): void {
 
 .field {
   @apply block w-full rounded-md border border-control bg-canvas px-3 py-2 text-sm text-ink placeholder:text-muted;
+}
+
+.drop-zone-outline {
+  @apply rounded-md border border-control bg-canvas text-ink min-h-36 flex justify-center items-center
 }
 </style>

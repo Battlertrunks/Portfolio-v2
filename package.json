@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "packageManager": "pnpm@11.4.0",
+  "packageManager": "pnpm@12.23.0+sha512.02da94ffaf133f46074322afe552f90d40b5f71ae259aefbccdacc5085b1d617e98d65e0131f5748b9b67445978ee5055d7d59a473f1eef0d504854fefcd5975",
   "engines": {
     "node": ">=20.19.0"
   },
@@ -22,7 +22,8 @@
     "prepare": "cd .. && husky client/.husky"
   },
   "dependencies": {
-    "vue": "^3.5.45",
+    "lucide-vue-next": "^1.0.0",
+    "vue": "^3.5.46",
     "vue-router": "^5.5.1"
   },
   "devDependencies": {
@@ -37,7 +38,7 @@
     "globals": "^17.14.0",
     "husky": "^9.1.7",
     "jsdom": "^31.0.1",
-    "lint-staged": "^17.6.1",
+    "lint-staged": "^17.6.2",
     "prettier": "^3.10.1",
     "tailwindcss": "^4.3.5",
     "typescript": "^6.0.3",
