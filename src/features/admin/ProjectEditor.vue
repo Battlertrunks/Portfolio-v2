@@ -12,7 +12,7 @@ const { project } = defineProps<{ project: AdminProject | undefined }>();
 const emit = defineEmits<{ save: [draft: ProjectDraft]; cancel: [] }>();
 
 const fileInput = useTemplateRef<HTMLInputElement>('fileInput');
-const selectFilesButton = useTemplateRef<{ $el: HTMLButtonElement }>('selectFilesButton');
+const selectFilesButton = useTemplateRef<InstanceType<typeof BaseButton>>('selectFilesButton');
 const title = ref(project?.title ?? '');
 const timeline = ref(project?.timeline ?? '');
 const statuses: readonly ProjectStatus[] = ['Planned', 'In progress', 'Shipped'];
@@ -57,10 +57,11 @@ function onDrop(event: DragEvent): void {
   if (files?.length) addFiles(files);
 }
 
+/** Returns keyboard focus to the file picker trigger after removing an attachment. */
 async function removeAttachment(id: number): Promise<void> {
   attachments.value = attachments.value.filter((attachment) => attachment.id !== id);
   await nextTick();
-  selectFilesButton.value?.$el.focus();
+  selectFilesButton.value?.focus();
 }
 
 function save(): void {

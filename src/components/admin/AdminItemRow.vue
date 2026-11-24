@@ -4,18 +4,19 @@ import { nextTick, ref, useId, useTemplateRef } from 'vue';
 import BaseButton from '@/components/BaseButton.vue';
 
 defineProps<{ title: string; itemLabel: string; archived: boolean }>();
+defineSlots<{ metadata?(): void; details?(): void }>();
 const emit = defineEmits<{ edit: []; toggleArchive: []; delete: [] }>();
 const detailsId = useId();
 const expanded = ref(false);
 const confirmDelete = ref(false);
 const deleteButton = useTemplateRef<HTMLButtonElement>('deleteButton');
-const cancelDeleteButton = useTemplateRef<{ $el: HTMLButtonElement }>('cancelDeleteButton');
+const cancelDeleteButton = useTemplateRef<InstanceType<typeof BaseButton>>('cancelDeleteButton');
 
 /** Moves focus after Vue adds or removes the inline confirmation controls. */
 async function setDeleteConfirmation(isOpen: boolean): Promise<void> {
   confirmDelete.value = isOpen;
   await nextTick();
-  const button = isOpen ? cancelDeleteButton.value?.$el : deleteButton.value;
+  const button = isOpen ? cancelDeleteButton.value : deleteButton.value;
   button?.focus();
 }
 </script>
@@ -26,6 +27,7 @@ async function setDeleteConfirmation(isOpen: boolean): Promise<void> {
       <div class="min-w-0">
         <h2>
           <button
+            v-if="$slots.details"
             type="button"
             class="group inline-flex min-h-9 items-center gap-2.5 rounded-sm text-left font-semibold text-ink hover:text-accent"
             :aria-expanded="expanded"
@@ -39,10 +41,14 @@ async function setDeleteConfirmation(isOpen: boolean): Promise<void> {
             />
             <span class="wrap-anywhere">{{ title }}</span>
           </button>
+          <span v-else class="flex min-h-9 items-center font-semibold wrap-anywhere text-ink">
+            {{ title }}
+          </span>
         </h2>
         <div
           v-if="$slots.metadata"
-          class="ml-[1.125rem] flex flex-wrap items-center gap-x-3 gap-y-1"
+          class="flex flex-wrap items-center gap-x-3 gap-y-1"
+          :class="{ 'ml-[1.125rem]': $slots.details }"
         >
           <slot name="metadata" />
         </div>
@@ -78,6 +84,7 @@ async function setDeleteConfirmation(isOpen: boolean): Promise<void> {
     </div>
 
     <div
+      v-if="$slots.details"
       v-show="expanded"
       :id="detailsId"
       class="mt-3 rounded-lg border border-line bg-canvas px-4 py-3 text-sm text-muted"
