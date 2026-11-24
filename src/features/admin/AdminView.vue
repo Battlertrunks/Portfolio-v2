@@ -1,10 +1,7 @@
 <script setup lang="ts">
-import { computed, nextTick, ref, useTemplateRef } from 'vue';
+import { ref, useTemplateRef } from 'vue';
 
-import BaseButton from '@/components/BaseButton.vue';
-import BaseCard from '@/components/BaseCard.vue';
-import PageContainer from '@/components/PageContainer.vue';
-import SectionHeading from '@/components/SectionHeading.vue';
+import AdminCollectionView from '@/components/admin/AdminCollectionView.vue';
 import AdminProjectRow from '@/features/admin/AdminProjectRow.vue';
 import ProjectEditor from '@/features/admin/ProjectEditor.vue';
 import {
@@ -17,19 +14,8 @@ const projects = ref(initialAdminProjects());
 const showArchived = ref(false);
 const editor = ref<{ project?: AdminProject }>();
 const announcement = ref('');
-const activeFilter = useTemplateRef<HTMLButtonElement>('activeFilter');
-const archiveFilter = useTemplateRef<HTMLButtonElement>('archiveFilter');
+const collection = useTemplateRef('collection');
 
-const archivedCount = computed((): number => projects.value.filter((project) => project.archived).length);
-const visibleProjects = computed((): AdminProject[] =>
-  projects.value.filter((project: AdminProject) => project.archived === showArchived.value),
-);
-
-/**
- * Saves a project draft. If the project already exists, it updates the existing project.
- * Otherwise, it adds a new project to the list.
- * @param {ProjectDraft} draft - The project draft to save.
- */
 function saveProject(draft: ProjectDraft): void {
   const existing = editor.value?.project;
 
@@ -46,115 +32,47 @@ function saveProject(draft: ProjectDraft): void {
   editor.value = undefined;
 }
 
-/**
- * Focuses the currently active filter button after a change in the project list.
- */
-
-async function focusCurrentFilter(): Promise<void> {
-  await nextTick();
-  const filter = showArchived.value ? archiveFilter.value : activeFilter.value;
-  filter?.focus();
-}
-
-/**
- * Toggles the archived status of a project.
- * @param {AdminProject} project - The project to toggle.
- */
 function toggleArchive(project: AdminProject): void {
   project.archived = !project.archived;
   announcement.value = `${project.title} ${project.archived ? 'archived' : 'restored'}.`;
-  void focusCurrentFilter();
+  void collection.value?.focusCurrentFilter();
 }
 
-/**
- * Deletes a project from the list.
- * @param {AdminProject} project - The project to delete.
- */
 function deleteProject(project: AdminProject): void {
   projects.value = projects.value.filter(({ id }) => id !== project.id);
   announcement.value = `${project.title} deleted.`;
-  void focusCurrentFilter();
+  void collection.value?.focusCurrentFilter();
 }
 </script>
 
 <template>
-  <PageContainer>
-    <section class="py-16 sm:py-24" aria-labelledby="admin-title">
-      <SectionHeading
-        heading-id="admin-title"
-        eyebrow="Portfolio admin"
-        title="Manage projects"
-        :level="1"
-        description="Changes are available for this visit only."
+  <AdminCollectionView
+    ref="collection"
+    v-model:show-archived="showArchived"
+    title="Manage projects"
+    description="Changes are available for this visit only."
+    item-label="project"
+    items-label="projects"
+    :items="projects"
+    :announcement="announcement"
+    @add="editor = {}"
+  >
+    <template #row="{ item: project }">
+      <AdminProjectRow
+        :project="project"
+        @edit="editor = { project }"
+        @toggle-archive="toggleArchive(project)"
+        @delete="deleteProject(project)"
       />
+    </template>
 
-      <BaseCard padding="none" class="mt-8 sm:mt-10">
-        <div
-          class="flex flex-wrap gap-2 border-b border-line px-4 py-3 sm:px-6"
-          role="group"
-          aria-label="Filter projects"
-        >
-          <button
-            ref="activeFilter"
-            type="button"
-            class="rounded-md px-3 py-2 text-sm font-semibold transition-colors"
-            :class="
-              showArchived ? 'text-muted hover:text-ink' : 'bg-accent-soft text-accent-soft-ink'
-            "
-            :aria-pressed="!showArchived"
-            @click="showArchived = false"
-          >
-            Active <span class="ml-1 tabular-nums">{{ projects.length - archivedCount }}</span>
-          </button>
-          <button
-            ref="archiveFilter"
-            type="button"
-            class="rounded-md px-3 py-2 text-sm font-semibold transition-colors"
-            :class="
-              showArchived ? 'bg-accent-soft text-accent-soft-ink' : 'text-muted hover:text-ink'
-            "
-            :aria-pressed="showArchived"
-            @click="showArchived = true"
-          >
-            Archived <span class="ml-1 tabular-nums">{{ archivedCount }}</span>
-          </button>
-        </div>
-
-        <ul
-          v-if="visibleProjects.length"
-          class="divide-y divide-line"
-          :aria-label="showArchived ? 'Archived projects' : 'Active projects'"
-        >
-          <AdminProjectRow
-            v-for="project in visibleProjects"
-            :key="project.id"
-            :project="project"
-            @edit="editor = { project }"
-            @toggle-archive="toggleArchive(project)"
-            @delete="deleteProject(project)"
-          />
-        </ul>
-        <p v-else class="px-4 py-8 text-sm text-muted sm:px-6">
-          {{ showArchived ? 'No archived projects.' : 'No active projects.' }}
-        </p>
-
-        <div
-          class="flex flex-wrap items-center justify-between gap-3 border-t border-line px-4 py-4 sm:px-6"
-        >
-          <BaseButton aria-haspopup="dialog" @click="editor = {}">
-            <span aria-hidden="true" class="text-lg leading-none">+</span>
-            Add project
-          </BaseButton>
-          <p role="status" class="text-sm text-muted">{{ announcement }}</p>
-        </div>
-      </BaseCard>
-
+    <template #editor>
       <ProjectEditor
         v-if="editor"
         :project="editor.project"
         @save="saveProject"
         @cancel="editor = undefined"
       />
-    </section>
-  </PageContainer>
+    </template>
+  </AdminCollectionView>
 </template>
