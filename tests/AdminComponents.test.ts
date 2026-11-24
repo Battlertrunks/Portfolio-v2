@@ -66,6 +66,17 @@ describe('AdminCollectionView', () => {
 });
 
 describe('AdminItemRow', () => {
+  it('renders a plain heading when details are omitted', () => {
+    const wrapper = mount(AdminItemRow, {
+      props: { title: 'Release notes', itemLabel: 'article', archived: false },
+      slots: { metadata: '<span>Published</span>' },
+    });
+
+    expect(wrapper.get('h2').text()).toBe('Release notes');
+    expect(wrapper.find('h2 button').exists()).toBe(false);
+    expect(wrapper.text()).toContain('Published');
+  });
+
   it('expands slotted details and emits edit and archive actions', async () => {
     const wrapper = mount(AdminItemRow, {
       attachTo: document.body,
