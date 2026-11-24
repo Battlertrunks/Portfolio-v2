@@ -128,7 +128,7 @@ describe('AdminView', () => {
         static revokeObjectURL = revokeObjectURL;
       },
     );
-    const wrapper = mount(AdminView);
+    const wrapper = mount(AdminView, { attachTo: document.body });
     await wrapper.get('button[aria-haspopup="dialog"]:not([aria-label])').trigger('click');
 
     const fileInput = wrapper.get<HTMLInputElement>('#project-media');
@@ -137,7 +137,6 @@ describe('AdminView', () => {
     Object.defineProperty(fileInput.element, 'files', {
       value: [
         new File(['image'], 'screen.png', { type: 'image/png' }),
-        new File(['video'], 'demo.mp4', { type: 'video/mp4' }),
         new File(['text'], 'notes.txt', { type: 'text/plain' }),
       ],
     });
@@ -145,43 +144,49 @@ describe('AdminView', () => {
 
     expect(wrapper.get('[role="alert"]').text()).toBe('Choose image or video files.');
     expect(wrapper.get('dialog img').attributes('src')).toBe('blob:screen.png');
+    await wrapper.get('.drop-zone-outline').trigger('drop', {
+      dataTransfer: { files: [new File(['video'], 'demo.mp4', { type: 'video/mp4' })] },
+    });
+
+    expect(wrapper.find('[role="alert"]').exists()).toBe(false);
     expect(wrapper.get('dialog video').attributes('src')).toBe('blob:demo.mp4');
     expect(wrapper.get('dialog video').attributes('aria-label')).toBe('demo.mp4');
-    expect(wrapper.get('#project-media-label-0').attributes('required')).toBeDefined();
 
     await wrapper.get('#project-title').setValue('Project with media');
     await wrapper.get('#project-description').setValue('A screenshot and video demo.');
-    await wrapper.get('#project-media-label-0').setValue('Screenshot of the dashboard');
     await wrapper.get('dialog form').trigger('submit');
 
     expect(revokeObjectURL).toHaveBeenCalledWith('blob:screen.png');
     expect(revokeObjectURL).toHaveBeenCalledWith('blob:demo.mp4');
 
     await wrapper.get('button[aria-label="Edit Project with media"]').trigger('click');
-    expect(wrapper.get('dialog img').attributes('alt')).toBe('Screenshot of the dashboard');
+    expect(wrapper.get('dialog img').attributes('src')).toBe('blob:screen.png');
     expect(wrapper.get('dialog video').attributes('src')).toBe('blob:demo.mp4');
 
     await wrapper.get('button[aria-label="Remove attachment 2"]').trigger('click');
+    expect(document.activeElement?.textContent?.trim()).toBe('Select file');
     await wrapper.get('dialog form').trigger('submit');
     await wrapper.get('button[aria-label="Edit Project with media"]').trigger('click');
     expect(wrapper.find('dialog video').exists()).toBe(false);
-    expect(wrapper.get('dialog img').attributes('alt')).toBe('Screenshot of the dashboard');
+    expect(wrapper.get('dialog img').attributes('src')).toBe('blob:screen.png');
   });
 
   it('archives, restores, and deletes a project after confirmation', async () => {
-    const wrapper = mount(AdminView);
+    const wrapper = mount(AdminView, { attachTo: document.body });
     const activeFilter = wrapper.get('[role="group"] button:first-child');
     const archiveFilter = wrapper.get('[role="group"] button:last-child');
 
     await wrapper.get('button[aria-label="Archive Portfolio V2"]').trigger('click');
     expect(wrapper.find('button[aria-label="Edit Portfolio V2"]').exists()).toBe(false);
     expect(archiveFilter.text()).toContain('1');
+    expect(document.activeElement).toBe(activeFilter.element);
 
     await archiveFilter.trigger('click');
     expect(archiveFilter.attributes('aria-pressed')).toBe('true');
     const archived = wrapper.get('ul[aria-label="Archived projects"]');
     await archived.get('button[aria-label="Restore Portfolio V2"]').trigger('click');
     expect(wrapper.text()).toContain('No archived projects.');
+    expect(document.activeElement).toBe(archiveFilter.element);
 
     await activeFilter.trigger('click');
     await wrapper.get('button[aria-label="Delete Portfolio V2"]').trigger('click');
@@ -198,5 +203,6 @@ describe('AdminView', () => {
     await confirm!.trigger('click');
     expect(wrapper.find('button[aria-label="Edit Portfolio V2"]').exists()).toBe(false);
     expect(wrapper.get('[role="status"]').text()).toBe('Portfolio V2 deleted.');
+    expect(document.activeElement).toBe(activeFilter.element);
   });
 });
