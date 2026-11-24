@@ -27,11 +27,16 @@ const formError = ref('');
 onMounted(() => dialog.value?.showModal());
 onBeforeUnmount(() => dialog.value?.close());
 
-function addFiles(event: Event) {
+/**
+ * Adds files to the attachments list.
+ * @param {Event} event - The file input change event.
+ */
+function addFiles(event: Event): void {
   const input = event.currentTarget as HTMLInputElement;
   const files = Array.from(input.files ?? []);
   fileError.value = '';
 
+  // Validate each file before adding it to the attachments list.
   for (const file of files) {
     const type = file.type.split('/')[0];
     if (type !== 'image' && type !== 'video') {
@@ -47,13 +52,21 @@ function addFiles(event: Event) {
   input.value = '';
 }
 
-async function removeAttachment(id: number) {
+/**
+ * Removes an attachment from the list by its ID.
+ * @param {number} id - The ID of the attachment to remove.
+ */
+async function removeAttachment(id: number): Promise<void> {
   attachments.value = attachments.value.filter((attachment) => attachment.id !== id);
   await nextTick();
   fileInput.value?.focus();
 }
 
-function save() {
+/**
+ * Saves the project by emitting the 'save' event with the project data.
+ * @emits save - The event emitted with the project data when the project is saved.
+ */
+function save(): void {
   const media = attachments.value.map(({ item }) => item);
 
   if (

@@ -45,3 +45,7 @@ pnpm build
 ```
 
 Format `.ts`, `.vue`, `.json`, `.md`, `.css`, and `.html` files with Prettier.
+
+semi colons should be used at the end of code.
+We should not default to `any` or `unkwown` types, we should assign when appropriate.
+

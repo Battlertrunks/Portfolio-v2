@@ -19,12 +19,18 @@ const editor = ref<{ project?: AdminProject }>();
 const announcement = ref('');
 const activeFilter = useTemplateRef<HTMLButtonElement>('activeFilter');
 const archiveFilter = useTemplateRef<HTMLButtonElement>('archiveFilter');
-const archivedCount = computed(() => projects.value.filter((project) => project.archived).length);
-const visibleProjects = computed(() =>
-  projects.value.filter((project) => project.archived === showArchived.value),
+
+const archivedCount = computed((): number => projects.value.filter((project) => project.archived).length);
+const visibleProjects = computed((): AdminProject[] =>
+  projects.value.filter((project: AdminProject) => project.archived === showArchived.value),
 );
 
-function saveProject(draft: ProjectDraft) {
+/**
+ * Saves a project draft. If the project already exists, it updates the existing project.
+ * Otherwise, it adds a new project to the list.
+ * @param {ProjectDraft} draft - The project draft to save.
+ */
+function saveProject(draft: ProjectDraft): void {
   const existing = editor.value?.project;
 
   if (existing) {
@@ -40,19 +46,31 @@ function saveProject(draft: ProjectDraft) {
   editor.value = undefined;
 }
 
-async function focusCurrentFilter() {
+/**
+ * Focuses the currently active filter button after a change in the project list.
+ */
+
+async function focusCurrentFilter(): Promise<void> {
   await nextTick();
   const filter = showArchived.value ? archiveFilter.value : activeFilter.value;
   filter?.focus();
 }
 
-function toggleArchive(project: AdminProject) {
+/**
+ * Toggles the archived status of a project.
+ * @param {AdminProject} project - The project to toggle.
+ */
+function toggleArchive(project: AdminProject): void {
   project.archived = !project.archived;
   announcement.value = `${project.title} ${project.archived ? 'archived' : 'restored'}.`;
   void focusCurrentFilter();
 }
 
-function deleteProject(project: AdminProject) {
+/**
+ * Deletes a project from the list.
+ * @param {AdminProject} project - The project to delete.
+ */
+function deleteProject(project: AdminProject): void {
   projects.value = projects.value.filter(({ id }) => id !== project.id);
   announcement.value = `${project.title} deleted.`;
   void focusCurrentFilter();
