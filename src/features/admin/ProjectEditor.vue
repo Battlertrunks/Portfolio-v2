@@ -1,17 +1,18 @@
 <script setup lang="ts">
-import { nextTick, onBeforeUnmount, onMounted, ref, useTemplateRef } from 'vue';
+import { SquarePenIcon, Trash2Icon } from 'lucide-vue-next';
+import { nextTick, ref, useTemplateRef } from 'vue';
 
 import BaseButton from '@/components/BaseButton.vue';
+import AdminEditorForm from '@/components/admin/AdminEditorForm.vue';
 import AdminMediaPreview from '@/features/admin/AdminMediaPreview.vue';
 import type { AdminProject, DraftProjectMedia, ProjectDraft } from '@/features/admin/adminProjects';
 import type { ProjectStatus } from '@/types';
-import { SquarePenIcon, Trash2Icon } from 'lucide-vue-next';
 
 const { project } = defineProps<{ project: AdminProject | undefined }>();
 const emit = defineEmits<{ save: [draft: ProjectDraft]; cancel: [] }>();
 
-const dialog = useTemplateRef<HTMLDialogElement>('dialog');
 const fileInput = useTemplateRef<HTMLInputElement>('fileInput');
+const selectFilesButton = useTemplateRef<InstanceType<typeof BaseButton>>('selectFilesButton');
 const title = ref(project?.title ?? '');
 const timeline = ref(project?.timeline ?? '');
 const statuses: readonly ProjectStatus[] = ['Planned', 'In progress', 'Shipped'];
@@ -25,19 +26,10 @@ const attachments = ref(
 const fileError = ref('');
 const formError = ref('');
 
-onMounted(() => dialog.value?.showModal());
-onBeforeUnmount(() => dialog.value?.close());
-
-/**
- * Adds files to the attachments list.
- * @param {Event} event - The file input change event.
- */
-function addFiles(event: Event): void {
-  const input = event.currentTarget as HTMLInputElement;
-  const files = Array.from(input.files ?? []);
+/** Accepts valid images and videos even when the batch contains unsupported files. */
+function addFiles(files: FileList): void {
   fileError.value = '';
 
-  // Validate each file before adding it to the attachments list.
   for (const file of files) {
     const type = file.type.split('/')[0];
     if (type !== 'image' && type !== 'video') {
@@ -49,32 +41,32 @@ function addFiles(event: Event): void {
       type === 'image' ? { type, file, alt: '' } : { type, file, label: file.name };
     attachments.value.push({ id: nextAttachmentId++, item });
   }
+}
 
+function onFileChange(): void {
+  const input = fileInput.value;
+  if (!input?.files) return;
+
+  addFiles(input.files);
+  // Reset the picker so choosing the same file again dispatches another change event.
   input.value = '';
 }
 
-/**
- * Removes an attachment from the list by its ID.
- * @param {number} id - The ID of the attachment to remove.
- */
+function onDrop(event: DragEvent): void {
+  const files = event.dataTransfer?.files;
+  if (files?.length) addFiles(files);
+}
+
+/** Returns keyboard focus to the file picker trigger after removing an attachment. */
 async function removeAttachment(id: number): Promise<void> {
   attachments.value = attachments.value.filter((attachment) => attachment.id !== id);
   await nextTick();
-  fileInput.value?.focus();
+  selectFilesButton.value?.focus();
 }
 
-/**
- * Saves the project by emitting the 'save' event with the project data.
- * @emits save - The event emitted with the project data when the project is saved.
- */
 function save(): void {
-  const media = attachments.value.map(({ item }) => item);
-
-  if (
-    !title.value ||
-    !description.value
-  ) {
-    formError.value = 'Enter a title and description for each attachment.';
+  if (!title.value || !description.value) {
+    formError.value = 'Enter a project title and description.';
     return;
   }
 
@@ -91,152 +83,115 @@ function save(): void {
       ),
     ],
     description: description.value,
-    media,
+    media: attachments.value.map(({ item }) => item),
   });
-}
-
-function onDrop(event: DragEvent, type: string): void {
-  const files = event.dataTransfer?.files;
-  if (files) {
-    addFiles({ currentTarget: { files } } as unknown as Event);
-  }
 }
 </script>
 
 <template>
-  <dialog
-    ref="dialog"
-    aria-labelledby="project-editor-title"
-    class="m-auto max-h-[calc(100dvh-2rem)] w-[calc(100%-2rem)] max-w-2xl overflow-y-auto overscroll-contain rounded-xl border border-line bg-surface text-ink shadow-2xl backdrop:bg-canvas/80 backdrop:backdrop-blur-sm"
-    @cancel.self.prevent="emit('cancel')"
+  <AdminEditorForm
+    :title="project ? 'Edit project' : 'Add project'"
+    :submit-label="project ? 'Save changes' : 'Add project'"
+    :error="formError"
+    @submit="save"
+    @cancel="emit('cancel')"
   >
-    <form @submit.prevent="save">
-      <div class="border-b border-line px-5 py-4 sm:px-6">
-        <h2 id="project-editor-title" class="text-xl font-semibold tracking-tight">
-          {{ project ? 'Edit project' : 'Add project' }}
-        </h2>
-      </div>
-
-      <div class="grid gap-5 px-5 py-5 sm:grid-cols-2 sm:px-6">
-        <div class="sm:col-span-2">
-          <label for="project-title" class="field-label">Title</label>
-          <input id="project-title" v-model.trim="title" class="field" required autofocus />
-        </div>
-        <div>
-          <label for="project-timeline" class="field-label"
-            >Timeline <span class="font-normal text-muted">(optional)</span></label
-          >
-          <input
-            id="project-timeline"
-            v-model.trim="timeline"
-            class="field"
-            placeholder="e.g. May 2025 – Present"
-          />
-        </div>
-        <div>
-          <label for="project-status" class="field-label">Status</label>
-          <select id="project-status" v-model="status" class="field">
-            <option v-for="option in statuses" :key="option">{{ option }}</option>
-          </select>
-        </div>
-        <div class="sm:col-span-2">
-          <label for="project-tags" class="field-label"
-            >Tags <span class="font-normal text-muted">(optional)</span></label
-          >
-          <input
-            id="project-tags"
-            v-model="tags"
-            class="field"
-            aria-describedby="project-tags-hint"
-          />
-          <p id="project-tags-hint" class="mt-1.5 text-xs text-muted">Separate tags with commas.</p>
-        </div>
-        <div class="sm:col-span-2">
-          <label for="project-description" class="field-label">Description</label>
-          <textarea
-            id="project-description"
-            v-model.trim="description"
-            class="field min-h-24 resize-y"
-            rows="3"
-            required
-          />
-        </div>
-
-        <fieldset class="min-w-0 border-t border-line pt-3 sm:col-span-2">
-          <legend class="pr-3 text-sm font-semibold">
-            Media <span class="font-normal text-muted">(optional)</span>
-          </legend>
-
-          <div
-            class="drop-zone-outline"
-            @drop.prevent="onDrop($event, 'attachments')"
-            @dragover.prevent
-            @dragenter.prevent
-          >
-            <div class="flex flex-col justify-center">
-              <h3>Drop Your Favorite Files Here</h3>
-              <p class="text-sm text-muted">You can also click to select files.</p>
-              <BaseButton class="mt-4 self-center" @click="fileInput?.click()">
-                <SquarePenIcon class="h-4 w-4" /> Select file
-              </BaseButton>
-              <input
-                id="project-media"
-                ref="fileInput"
-                type="file"
-                accept="image/*,video/*"
-                multiple
-                hidden
-                @change="addFiles"
-              />
-            </div>
-          </div>
-          <p v-if="fileError" role="alert" class="mt-2 text-sm text-rose-200">{{ fileError }}</p>
-
-          <ul v-if="attachments.length" class="mt-4 space-y-3" aria-label="Attachments">
-            <li
-              v-for="({ id, item }, index) in attachments"
-              :key="id"
-              class="flex justify-between items-center rounded-lg border border-line bg-canvas p-6 sm:grid-cols-[8rem_minmax(0,1fr)]"
-            >
-              <AdminMediaPreview :item="item" />
-              <div>
-                <button
-                  type="button"
-                  class="rounded-sm text-s bg-red-900 p-2 px-4 text-white hover:bg-red-700 transition flex items-center"
-                  :aria-label="`Remove attachment ${index + 1}`"
-                  @click="removeAttachment(id)"
-                >
-                  <Trash2Icon class="mr-2 h-4 w-4" /> Remove
-                </button>
-              </div>
-            </li>
-          </ul>
-        </fieldset>
-      </div>
-
-      <div
-        class="sticky bottom-0 flex flex-wrap items-center justify-end gap-2 border-t border-line bg-surface px-5 py-4 sm:px-6"
+    <div class="sm:col-span-2">
+      <label for="project-title" class="admin-field-label">Title</label>
+      <input id="project-title" v-model.trim="title" class="admin-field" required autofocus />
+    </div>
+    <div>
+      <label for="project-timeline" class="admin-field-label"
+        >Timeline <span class="font-normal text-muted">(optional)</span></label
       >
-        <p v-if="formError" role="alert" class="w-full text-sm text-rose-200">{{ formError }}</p>
-        <BaseButton variant="secondary" @click="emit('cancel')">Cancel</BaseButton>
-        <BaseButton type="submit">{{ project ? 'Save changes' : 'Add project' }}</BaseButton>
+      <input
+        id="project-timeline"
+        v-model.trim="timeline"
+        class="admin-field"
+        placeholder="e.g. May 2025 – Present"
+      />
+    </div>
+    <div>
+      <label for="project-status" class="admin-field-label">Status</label>
+      <select id="project-status" v-model="status" class="admin-field">
+        <option v-for="option in statuses" :key="option">{{ option }}</option>
+      </select>
+    </div>
+    <div class="sm:col-span-2">
+      <label for="project-tags" class="admin-field-label"
+        >Tags <span class="font-normal text-muted">(optional)</span></label
+      >
+      <input
+        id="project-tags"
+        v-model="tags"
+        class="admin-field"
+        aria-describedby="project-tags-hint"
+      />
+      <p id="project-tags-hint" class="mt-1.5 text-xs text-muted">Separate tags with commas.</p>
+    </div>
+    <div class="sm:col-span-2">
+      <label for="project-description" class="admin-field-label">Description</label>
+      <textarea
+        id="project-description"
+        v-model.trim="description"
+        class="admin-field min-h-24 resize-y"
+        rows="3"
+        required
+      />
+    </div>
+
+    <fieldset class="min-w-0 border-t border-line pt-3 sm:col-span-2">
+      <legend class="pr-3 text-sm font-semibold">
+        Media <span class="font-normal text-muted">(optional)</span>
+      </legend>
+
+      <div class="drop-zone-outline" @drop.prevent="onDrop" @dragover.prevent @dragenter.prevent>
+        <div class="flex flex-col justify-center">
+          <h3>Drop Your Favorite Files Here</h3>
+          <p class="text-sm text-muted">You can also click to select files.</p>
+          <BaseButton ref="selectFilesButton" class="mt-4 self-center" @click="fileInput?.click()">
+            <SquarePenIcon class="h-4 w-4" /> Select file
+          </BaseButton>
+          <input
+            id="project-media"
+            ref="fileInput"
+            type="file"
+            accept="image/*,video/*"
+            multiple
+            hidden
+            @change="onFileChange"
+          />
+        </div>
       </div>
-    </form>
-  </dialog>
+      <p v-if="fileError" role="alert" class="mt-2 text-sm text-rose-200">{{ fileError }}</p>
+
+      <ul v-if="attachments.length" class="mt-4 space-y-3" aria-label="Attachments">
+        <li
+          v-for="({ id, item }, index) in attachments"
+          :key="id"
+          class="flex justify-between items-center rounded-lg border border-line bg-canvas p-6 sm:grid-cols-[8rem_minmax(0,1fr)]"
+        >
+          <AdminMediaPreview :item="item" />
+          <div>
+            <button
+              type="button"
+              class="rounded-sm text-s bg-red-900 p-2 px-4 text-white hover:bg-red-700 transition flex items-center"
+              :aria-label="`Remove attachment ${index + 1}`"
+              @click="removeAttachment(id)"
+            >
+              <Trash2Icon class="mr-2 h-4 w-4" /> Remove
+            </button>
+          </div>
+        </li>
+      </ul>
+    </fieldset>
+  </AdminEditorForm>
 </template>
 
 <style scoped>
 @reference '../../style.css';
 
-.field-label {
-  @apply mb-1.5 block text-sm font-medium text-ink;
-}
-
-.field {
-  @apply block w-full rounded-md border border-control bg-canvas px-3 py-2 text-sm text-ink placeholder:text-muted;
-}
-
 .drop-zone-outline {
-  @apply rounded-md border border-dashed border-control bg-canvas text-ink min-h-48 flex justify-center items-center
+  @apply flex min-h-48 items-center justify-center rounded-md border border-dashed border-control bg-canvas text-ink;
 }
 </style>
