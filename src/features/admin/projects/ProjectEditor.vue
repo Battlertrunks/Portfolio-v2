@@ -4,8 +4,8 @@ import { nextTick, ref, useTemplateRef } from 'vue';
 
 import BaseButton from '@/components/BaseButton.vue';
 import AdminEditorForm from '@/components/admin/AdminEditorForm.vue';
-import AdminMediaPreview from '@/features/admin/AdminMediaPreview.vue';
-import type { AdminProject, DraftProjectMedia, ProjectDraft } from '@/features/admin/adminProjects';
+import AdminMediaPreview from '@/features/admin/projects/AdminMediaPreview.vue';
+import type { AdminProject, DraftProjectMedia, ProjectDraft } from '@/features/admin/projects/adminProjects';
 import type { ProjectStatus } from '@/types';
 
 const { project } = defineProps<{ project: AdminProject | undefined }>();
@@ -175,11 +175,11 @@ function save(): void {
           <div>
             <button
               type="button"
-              class="rounded-sm text-s bg-red-900 p-2 px-4 text-white hover:bg-red-700 transition flex items-center"
+              class="rounded-sm text-sm bg-red-900 p-2 text-white hover:bg-red-700 transition flex items-center"
               :aria-label="`Remove attachment ${index + 1}`"
               @click="removeAttachment(id)"
             >
-              <Trash2Icon class="mr-2 h-4 w-4" /> Remove
+              <Trash2Icon class="h-4 w-4" />
             </button>
           </div>
         </li>
@@ -189,7 +189,7 @@ function save(): void {
 </template>
 
 <style scoped>
-@reference '../../style.css';
+@reference '../../../style.css';
 
 .drop-zone-outline {
   @apply flex min-h-48 items-center justify-center rounded-md border border-dashed border-control bg-canvas text-ink;

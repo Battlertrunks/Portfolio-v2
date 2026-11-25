@@ -2,13 +2,13 @@
 import { ref, useTemplateRef } from 'vue';
 
 import AdminCollectionView from '@/components/admin/AdminCollectionView.vue';
-import AdminProjectRow from '@/features/admin/AdminProjectRow.vue';
-import ProjectEditor from '@/features/admin/ProjectEditor.vue';
+import AdminProjectRow from '@/features/admin/projects/AdminProjectRow.vue';
+import ProjectEditor from '@/features/admin/projects/ProjectEditor.vue';
 import {
   initialAdminProjects,
   type AdminProject,
   type ProjectDraft,
-} from '@/features/admin/adminProjects';
+} from '@/features/admin/projects/adminProjects';
 
 const projects = ref(initialAdminProjects());
 const showArchived = ref(false);
@@ -16,6 +16,10 @@ const editor = ref<{ project?: AdminProject }>();
 const announcement = ref('');
 const collection = useTemplateRef('collection');
 
+/**
+ * Adds new projects within the projects ref
+ * @param {ProjectDraft} draft - Contains the properties of the project
+ */
 function saveProject(draft: ProjectDraft): void {
   const existing = editor.value?.project;
 
@@ -32,12 +36,20 @@ function saveProject(draft: ProjectDraft): void {
   editor.value = undefined;
 }
 
+/**
+ * Makes active projects go to the archive
+ * @param {AdminProject} project - The project being archived
+ */
 function toggleArchive(project: AdminProject): void {
   project.archived = !project.archived;
   announcement.value = `${project.title} ${project.archived ? 'archived' : 'restored'}.`;
   void collection.value?.focusCurrentFilter();
 }
 
+/**
+ * Deletes the project from the database
+ * @param {AdminProject} project - The project being deleted
+ */
 function deleteProject(project: AdminProject): void {
   projects.value = projects.value.filter(({ id }) => id !== project.id);
   announcement.value = `${project.title} deleted.`;

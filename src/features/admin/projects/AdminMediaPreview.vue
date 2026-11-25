@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue';
 
-import type { DraftProjectMedia } from '@/features/admin/adminProjects';
+import type { DraftProjectMedia } from '@/features/admin/projects/adminProjects';
 
 const { item } = defineProps<{ item: DraftProjectMedia }>();
 const previewUrl = ref('');

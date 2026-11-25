@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import AdminItemRow from '@/components/admin/AdminItemRow.vue';
-import type { AdminProject } from '@/features/admin/adminProjects';
+import type { AdminProject } from '@/features/admin/projects/adminProjects';
 
 defineProps<{ project: AdminProject }>();
 const emit = defineEmits<{ edit: []; toggleArchive: []; delete: [] }>();
