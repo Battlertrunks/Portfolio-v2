@@ -1,36 +1,103 @@
 <script setup lang="ts">
-import { ref, useTemplateRef } from 'vue';
+import { onMounted, ref, useTemplateRef } from 'vue';
 
 import AdminCollectionView from '@/components/admin/AdminCollectionView.vue';
 import AdminProjectRow from '@/features/admin/projects/AdminProjectRow.vue';
 import ProjectEditor from '@/features/admin/projects/ProjectEditor.vue';
 import {
-  initialAdminProjects,
   type AdminProject,
   type ProjectDraft,
 } from '@/features/admin/projects/adminProjects';
+import { useProjects } from '@/composables/useProjects';
+import { useCreateProject } from '@/composables/useCreateProject';
 
-const projects = ref(initialAdminProjects());
+const projects = ref<AdminProject[]>([]);
+const loading = ref<boolean>(true);
+const loadError = ref<string | null>(null);
+
+const projectCreationError = ref<string | null>(null);
+
 const showArchived = ref(false);
 const editor = ref<{ project?: AdminProject }>();
 const announcement = ref('');
 const collection = useTemplateRef('collection');
 
+const {
+  projects: fetchedProjects,
+  error: fetchError,
+  fetchProjects
+
+} = useProjects();
+
+async function loadProjects(): Promise<void> {
+  try {
+    await fetchProjects();
+
+    if (fetchError.value !== null) {
+      loadError.value = fetchError.value;
+      return;
+    }
+
+    projects.value = fetchedProjects.value.map(project => ({
+      ...project,
+      archived: false,
+      media: project.media ?? []
+    }));
+  } catch (error) {
+    loadError.value = error instanceof Error ? error.message : "Failed to load projects";
+  } finally {
+    loading.value = false;
+  }
+}
+
+onMounted(loadProjects);
+
+const {
+  project: createdProject,
+  isLoading,
+  error: createError,
+  createProject
+} = useCreateProject()
+
 /**
  * Adds new projects within the projects ref
  * @param {ProjectDraft} draft - Contains the properties of the project
  */
-function saveProject(draft: ProjectDraft): void {
+async function saveProject(draft: ProjectDraft): Promise<void> {
   const existing = editor.value?.project;
 
-  if (existing) {
-    projects.value = projects.value.map((project) =>
-      project.id === existing.id ? { ...project, ...draft } : project,
-    );
-  } else {
-    projects.value.push({ ...draft, id: crypto.randomUUID(), archived: false });
-    showArchived.value = false;
+  try {
+    // TODO: Improve the structure and devise a separation of coupled logic. I have a feeling the error handling and user context could get messy if left unchecked
+    if (!existing) {
+      loading.value = isLoading.value;
+      await createProject(draft);
+
+      console.log("test");
+
+      if (createError.value !== null) {
+        projectCreationError.value = createError.value;
+        return;
+      }
+
+      if (!createdProject.value) {
+        projectCreationError.value = "Project was returned.";
+        return;
+      }
+
+      projects.value.push({ ...createdProject.value, archived: false, media: createdProject.value.media ?? [] });
+      showArchived.value = false;
+    } else {
+      projects.value = projects.value.map((project) =>
+        project.id === existing.id ? { ...project, ...draft } : project,
+      );
+    }
+  } catch (error: unknown) {
+    projectCreationError.value = error instanceof Error ? error.message : "Unable to create or update projects.";
+  } finally {
+    loading.value = isLoading.value; // May need to re-think this loading state change
   }
+
+
 
   announcement.value = `${draft.title} ${existing ? 'updated' : 'added'}.`;
   editor.value = undefined;
@@ -58,7 +125,12 @@ function deleteProject(project: AdminProject): void {
 </script>
 
 <template>
+  <p v-if="loading" role="status">Loading Projects...</p>
+  <p v-else-if="loadError !== null" role="alert">
+    Could not load projects: {{ loadError }}
+  </p>
   <AdminCollectionView
+    v-else
     ref="collection"
     v-model:show-archived="showArchived"
     title="Manage projects"

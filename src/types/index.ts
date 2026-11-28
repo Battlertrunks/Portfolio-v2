@@ -21,7 +21,7 @@ export interface ProjectVideo {
 export type ProjectMedia = ProjectImage | ProjectVideo;
 
 export interface Project {
-  readonly id: string;
+  readonly id: number;
   readonly title: string;
   readonly timeline?: string;
   readonly description: string;

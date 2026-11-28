@@ -24,7 +24,16 @@ defineSlots<{
 const headingId = useId();
 const activeFilter = useTemplateRef<HTMLButtonElement>('activeFilter');
 const archiveFilter = useTemplateRef<HTMLButtonElement>('archiveFilter');
-const archivedCount = computed(() => props.items.filter((item) => item.archived).length);
+
+const archivedCount = computed(() => {
+  console.log(props.items)
+  if (props?.items) {
+    return props?.items?.filter((item) => item?.archived)?.length;
+  }
+
+  return [];
+});
+
 const visibleItems = computed(() =>
   props.items.filter((item) => item.archived === showArchived.value),
 );
